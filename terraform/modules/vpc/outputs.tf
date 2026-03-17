@@ -25,12 +25,12 @@ output "internet_gateway_id" {
 
 output "vpc_endpoint_dynamodb_id" {
   description = "ID of the DynamoDB VPC endpoint"
-  value = aws_vpc_endpoint.dynamodb.id
+  value       = aws_vpc_endpoint.dynamodb.id
 }
 
 output "vpc_endpoint_bedrock_id" {
   description = "ID of the Bedrock VPC endpoint"
-  value = aws_vpc_endpoint.bedrock.id
+  value       = aws_vpc_endpoint.bedrock.id
 }
 
 output "vpc_endpoints_sg_id" {
