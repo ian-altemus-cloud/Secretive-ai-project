@@ -1,3 +1,11 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "5.81.0"
+    }
+  }
+}
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
@@ -107,7 +115,66 @@ resource "aws_route_table_association" "public" {
 }
 
 resource "aws_route_table_association" "private" {
-  count          = length(var.private_subnet_cidrs)
+  count = length(var.private_subnet_cidrs)
   subnet_id      = aws_subnet.private[count.index].id
   route_table_id = aws_route_table.private.id
 }
+
+resource "aws_security_group" "vpc_endpoints" {
+  name = "${var.project_name}-${var.environment}-vpc-endpoints-sg"
+  description = "Security group for VPC endpoints"
+  vpc_id = aws_vpc.main.id
+
+  ingress {
+    from_port = 443
+    to_port = 443
+    protocol = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-vpc-endpoints-sg"
+    Environment = var.environment
+    Project = var.project_name
+  }
+}
+
+resource "aws_vpc_endpoint" "dynamodb" {
+  vpc_id = aws_vpc.main.id
+  service_name = "com.amazonaws.us-east-1.dynamodb"
+  vpc_endpoint_type = "Gateway"
+
+  route_table_ids = [
+  aws_route_table.private.id,
+  aws_route_table.public.id
+  ]
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-dynamodb-endpoint"
+    Environment = var.environment
+    Project = var.project_name
+  }
+}
+
+resource "aws_vpc_endpoint" "bedrock" {
+  vpc_id = aws_vpc.main.id
+  service_name = "com.amazonaws.us-east-1.bedrock-runtime"
+  vpc_endpoint_type = "Interface"
+  subnet_ids = aws_subnet.private[*].id
+  security_group_ids = [aws_security_group.vpc_endpoints.id]
+  private_dns_enabled = true
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-bedrock-endpoint"
+    Environment = var.environment
+    Project = var.project_name
+  }
+}
+
