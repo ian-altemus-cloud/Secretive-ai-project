@@ -41,3 +41,11 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
         working-directory: terraform/envs/dev
+
+      - name: Terraform Plan
+        run: terraform plan
+        working-directory: terraform/envs/dev
+        env:
+          TF_VAR_aws_region: us-east-1
+          TF_VAR_environment: dev
+          TF_VAR_project_name: secretive-nail-bar
