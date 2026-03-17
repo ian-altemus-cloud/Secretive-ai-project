@@ -13,6 +13,7 @@ override.tf.json
 .terraformrc
 terraform.rc
 
+*.pkg
 # Python
 __pycache__/
 *.py[cod]
