@@ -29,3 +29,10 @@ module "security_groups" {
   environment  = var.environment
   project_name = var.project_name
 }
+
+module "sqs" {
+  source = "../../modules/sqs"
+
+  project_name = var.project_name
+  environment  = var.environment
+}
