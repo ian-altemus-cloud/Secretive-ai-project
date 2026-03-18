@@ -31,14 +31,19 @@ module "security_groups" {
 }
 
 module "sqs" {
-  source = "../../modules/sqs"
-
+  source       = "../../modules/sqs"
   project_name = var.project_name
   environment  = var.environment
 }
 
 module "DynamoDB" {
   source       = "../../modules/dynamodb"
+  project_name = var.project_name
+  environment  = var.environment
+}
+
+module "ecr" {
+  source       = "../../modules/ecr"
   project_name = var.project_name
   environment  = var.environment
 }
