@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  flask:
+    build: .
+    ports:
+      - "80:80"
+    environment:
+      - SQS_QUEUE_URL=http://localstack:4566/000000000000/secretive-nail-bar-dev-queue
+      - META_VERIFY_TOKEN=local_verify_token
+      - META_APP_SECRET=local_app_secret
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    depends_on:
+      - localstack
+  localstack:
+    image: localstack/localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=sqs
