@@ -53,3 +53,13 @@ module "secrets" {
   project_name = var.project_name
   environment  = var.environment
 }
+
+module "fargate" {
+  source             = "../../modules/fargate"
+  project_name       = var.project_name
+  environment        = var.environment
+  container_image    = module.ecr.ecr_repository_url
+  vpc_id             = module.vpc.vpc_id
+  private_subnet_ids = module.vpc.private_subnet_ids
+  fargate_sg_id      = module.security_groups.fargate_sg_id
+}
