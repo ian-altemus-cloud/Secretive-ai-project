@@ -58,7 +58,7 @@ def track_escalation_total():
     """Increment escalation counter"""
     escalation_total.inc()
 
-def track_meta_api_errors_total():
+def track_meta_error():
     """Increment meta API errors counter"""
     meta_api_errors_total.inc()
 
