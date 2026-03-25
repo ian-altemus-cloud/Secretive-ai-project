@@ -63,3 +63,11 @@ module "fargate" {
   private_subnet_ids = module.vpc.private_subnet_ids
   fargate_sg_id      = module.security_groups.fargate_sg_id
 }
+
+module "api_gateway" {
+  source                = "../../modules/api_gateway"
+  project_name = var.project_name
+  environment = var.environment
+  sqs_queue_arn = module.sqs.sqs_arn
+  sqs_queue_url = module.sqs.sqs_url
+}
