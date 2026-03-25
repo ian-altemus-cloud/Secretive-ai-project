@@ -65,9 +65,9 @@ module "fargate" {
 }
 
 module "api_gateway" {
-  source                = "../../modules/api_gateway"
-  project_name = var.project_name
-  environment = var.environment
+  source        = "../../modules/api_gateway"
+  project_name  = var.project_name
+  environment   = var.environment
   sqs_queue_arn = module.sqs.sqs_arn
   sqs_queue_url = module.sqs.sqs_url
 }

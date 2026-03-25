@@ -1,16 +1,16 @@
 variable "project_name" {
   description = "Project name for resource naming"
-  type = string
+  type        = string
 }
 
 variable "environment" {
   description = "Development environment for resource"
-  type = string
+  type        = string
 }
 
 variable "sqs_queue_arn" {
   description = "ARN of the SQS queue to fwd webhook messages to"
-  type = string
+  type        = string
 }
 variable "sqs_queue_url" {
   description = "URL of the SQS queue"
