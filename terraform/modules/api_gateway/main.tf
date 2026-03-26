@@ -1,3 +1,11 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "5.81.0"
+    }
+  }
+}
 # API Gateway REST API
 resource "aws_api_gateway_rest_api" "main" {
   name        = "${var.project_name}-${var.environment}-api"
@@ -80,12 +88,24 @@ resource "aws_api_gateway_integration" "webhook_post" {
   }
 }
 
+resource "aws_api_gateway_integration" "webhook_get" {
+  http_method = aws_api_gateway_method.webhook_get.http_method
+  resource_id = aws_api_gateway_resource.webhook.id
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
 # Deployment
 resource "aws_api_gateway_deployment" "main" {
   rest_api_id = aws_api_gateway_rest_api.main.id
 
   depends_on = [
     aws_api_gateway_integration.webhook_post
+    aws_api_gateway_integration.webhook_get
   ]
 }
 
