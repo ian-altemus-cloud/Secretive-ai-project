@@ -5,10 +5,19 @@ terraform {
       version = "5.81.0"
     }
   }
+  backend "s3" {
+    bucket         = "secretive-ai-terraform-state"
+    key            = "secretive-nail-bar/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "secretive-ai-terraform-locks"
+    encrypt        = true
+  }
 }
+
 provider "aws" {
   region = var.aws_region
 }
+
 
 module "vpc" {
   source = "../../modules/vpc"
