@@ -1,3 +1,11 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "5.81.0"
+    }
+  }
+}
 resource "aws_ecs_cluster" "main" {
   name = "${var.project_name}-${var.environment}-cluster"
 
@@ -99,4 +107,9 @@ resource "aws_ecs_service" "main" {
     Environment = var.environment
     Project     = var.project_name
   }
+}
+
+resource "aws_cloudwatch_log_group" "main" {
+    name = "/ecs/${var.project_name}-${var.environment}"
+    retention_in_days = 14
 }
