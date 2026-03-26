@@ -104,7 +104,7 @@ resource "aws_api_gateway_deployment" "main" {
   rest_api_id = aws_api_gateway_rest_api.main.id
 
   depends_on = [
-    aws_api_gateway_integration.webhook_post
+    aws_api_gateway_integration.webhook_post,
     aws_api_gateway_integration.webhook_get
   ]
 }
