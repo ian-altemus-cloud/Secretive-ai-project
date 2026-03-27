@@ -119,11 +119,23 @@ resource "aws_api_gateway_integration_response" "webhook_get" {
 resource "aws_api_gateway_deployment" "main" {
   rest_api_id = aws_api_gateway_rest_api.main.id
 
+  triggers = {
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_integration.webhook_post,
+      aws_api_gateway_integration.webhook_get,
+      aws_api_gateway_integration_response.webhook_get,
+      aws_api_gateway_method_response.webhook_get_200
+    ]))
+  }
+
   depends_on = [
     aws_api_gateway_integration.webhook_post,
     aws_api_gateway_integration.webhook_get,
     aws_api_gateway_integration_response.webhook_get
   ]
+    lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # Stage
