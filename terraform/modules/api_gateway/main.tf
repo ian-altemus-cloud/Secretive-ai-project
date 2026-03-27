@@ -99,13 +99,30 @@ resource "aws_api_gateway_integration" "webhook_get" {
   }
 }
 
+resource "aws_api_gateway_method_response" "webhook_get_200" {
+  http_method = aws_api_gateway_method.webhook_get.http_method
+  resource_id = aws_api_gateway_resource.webhook.id
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  status_code = "200"
+}
+
+resource "aws_api_gateway_integration_response" "webhook_get" {
+  http_method = aws_api_gateway_method.webhook_get.http_method
+  resource_id = aws_api_gateway_resource.webhook.id
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  status_code = aws_api_gateway_method_response.webhook_get_200.status_code
+
+  depends_on = [aws_api_gateway_integration.webhook_get]
+}
+
 # Deployment
 resource "aws_api_gateway_deployment" "main" {
   rest_api_id = aws_api_gateway_rest_api.main.id
 
   depends_on = [
     aws_api_gateway_integration.webhook_post,
-    aws_api_gateway_integration.webhook_get
+    aws_api_gateway_integration.webhook_get,
+    aws_api_gateway_integration_response.webhook_get
   ]
 }
 
