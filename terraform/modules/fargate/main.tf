@@ -6,6 +6,7 @@ terraform {
     }
   }
 }
+
 resource "aws_ecs_cluster" "main" {
   name = "${var.project_name}-${var.environment}-cluster"
 
@@ -13,6 +14,7 @@ resource "aws_ecs_cluster" "main" {
     Name = "${var.project_name}-${var.environment}-cluster"
   }
 }
+
 resource "aws_iam_role" "ecs_execution_role" {
   name = "${var.project_name}-${var.environment}-ecs-execution-role"
 
@@ -72,6 +74,22 @@ resource "aws_ecs_task_definition" "main" {
       containerPort = var.container_port
       protocol      = "tcp"
     }]
+
+    environment = [
+      {
+        name = "DYNAMODB_TABLE_NAME"
+        value = "${var.project_name}-${var.environment}-dynamodb"
+      },
+      {
+        name = "SQS_QUEUE_URL"
+        value = "gttps://sqs/us-east-1.amazonaws.com/894943009636/${var.project_name}-${var.environment}-queue"
+      },
+      {
+        name = "AWS_DEFAULT_REGION"
+        value = "us-east-1"
+      }
+    ]
+
     logConfiguration = {
       logDriver = "awslogs"
       options = {
