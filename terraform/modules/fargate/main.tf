@@ -82,7 +82,7 @@ resource "aws_ecs_task_definition" "main" {
       },
       {
         name = "SQS_QUEUE_URL"
-        value = "gttps://sqs/us-east-1.amazonaws.com/894943009636/${var.project_name}-${var.environment}-queue"
+        value = "https://sqs.us-east-1.amazonaws.com/894943009636/${var.project_name}-${var.environment}-queue"
       },
       {
         name = "AWS_DEFAULT_REGION"
