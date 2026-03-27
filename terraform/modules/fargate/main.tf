@@ -131,3 +131,34 @@ resource "aws_cloudwatch_log_group" "main" {
     name = "/ecs/${var.project_name}-${var.environment}"
     retention_in_days = 14
 }
+
+resource "aws_iam_role_policy" "ecs_task_policy" {
+  name = "${var.project_name}-${var.environment}-ecs-task-policy"
+  role = aws_iam_role.ecs_task_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:SendMessage"]
+        Resource = var.sqs_queue_arn
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:Query"]
+        Resource = var.dynamodb_table_arn
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["bedrock:InvokeModel"]
+        Resource = var.bedrock_model_arn
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["secretsmanager:GetSecretValue"]
+        Resource = var.google_sheets_secret_arn
+      }
+    ]
+  })
+}

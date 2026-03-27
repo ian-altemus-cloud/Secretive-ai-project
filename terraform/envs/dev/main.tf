@@ -71,6 +71,10 @@ module "fargate" {
   vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.private_subnet_ids
   fargate_sg_id      = module.security_groups.fargate_sg_id
+  sqs_queue_arn      = module.sqs.sqs_arn
+  dynamodb_table_arn = module.DynamoDB.dynamodb_table_arn
+  bedrock_model_arn  = "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-haiku-20240307-v1:0"
+  google_sheets_secret_arn = "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-nail-bar/dev/google-sheets-credentials-IM5gxg"
 }
 
 module "api_gateway" {

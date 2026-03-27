@@ -51,3 +51,22 @@ variable "desired_count" {
   type        = number
   default     = 1
 }
+
+variable "sqs_queue_arn" {
+  description = "SQS Queue ARN"
+  type        = string
+}
+
+variable "dynamodb_table_arn" {
+  description = "DynamoDB Table ARN"
+  type        = string
+}
+
+variable "bedrock_model_arn" {
+  description = "Bedrock model arn"
+  type        = string
+}
+variable "google_sheets_secret_arn" {
+  description = "google sheets arn"
+  type        = string
+}
