@@ -79,4 +79,5 @@ module "api_gateway" {
   environment   = var.environment
   sqs_queue_arn = module.sqs.sqs_arn
   sqs_queue_url = module.sqs.sqs_url
+  aws_account_id = "894943009636"
 }

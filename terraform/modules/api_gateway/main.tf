@@ -76,7 +76,7 @@ resource "aws_api_gateway_integration" "webhook_post" {
   http_method             = aws_api_gateway_method.webhook_post.http_method
   integration_http_method = "POST"
   type                    = "AWS"
-  uri                     = "arn:aws:apigateway:${var.aws_region}:sqs:path//${var.sqs_queue_url}"
+  uri                     = "arn:aws:apigateway:${var.aws_region}:sqs:path//${var.aws_account_id}/${var.project_name}-${var.environment}-queue"
   credentials             = aws_iam_role.api_gateway_sqs_role.arn
 
   request_parameters = {
@@ -111,6 +111,11 @@ resource "aws_api_gateway_integration_response" "webhook_get" {
   resource_id = aws_api_gateway_resource.webhook.id
   rest_api_id = aws_api_gateway_rest_api.main.id
   status_code = aws_api_gateway_method_response.webhook_get_200.status_code
+  selection_pattern = ""
+
+  response_templates = {
+    "application/json" = ""
+  }
 
   depends_on = [aws_api_gateway_integration.webhook_get]
 }
