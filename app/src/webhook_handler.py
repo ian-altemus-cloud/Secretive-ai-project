@@ -154,16 +154,20 @@ def run_sqs_consumer() -> None:
 
             for msg in messages:
                 body = json.loads(msg['Body'])
-                process_message(body)
 
-                sqs.delete_message(
-                    QueueUrl=QUEUE_URL,
-                    ReceiptHandle=msg['ReceiptHandle']
-                )
+                try:
+                    process_message(body)
+                    sqs.delete_message(
+                        QueueUrl=QUEUE_URL,
+                        ReceiptHandle=msg['ReceiptHandle']
+                    )
+                except Exception as e:
+                    print(f"Failed to process message, leaving in queue: {e}")
 
         except Exception as e:
             print(f"SQS consumer error: {e}")
             time.sleep(5)
+
 
 if __name__ == '__main__':
     from threading import Thread
