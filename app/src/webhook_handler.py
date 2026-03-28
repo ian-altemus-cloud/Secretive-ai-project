@@ -107,7 +107,9 @@ def process_message(messaging: dict) -> None:
         save_message(sender_id, 'user', message_text)
 
         # Get Claude's response via Bedrock
+        print(f"Calling Bedrock for sender: {sender_id}")
         ai_response = get_response(history, message_text)
+        print(F"Bedrock response received: {ai_response[:50]}")
 
         # Save Claude's response
         save_message(sender_id, 'assistant', ai_response)
