@@ -4,6 +4,8 @@ import boto3
 import hmac
 import hashlib
 import requests
+import sys
+sys.stdout.reconfigure(line_buffering=True)
 from flask import Flask, request, jsonify
 
 from metrics import track_dm_received, track_booking_link_sent, track_meta_error, start_metrics_server

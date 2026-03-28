@@ -87,6 +87,10 @@ resource "aws_ecs_task_definition" "main" {
       {
         name = "AWS_DEFAULT_REGION"
         value = "us-east-1"
+      },
+      {
+        name  = "PYTHONUNBUFFERED"
+        value = "1"
       }
     ]
 
