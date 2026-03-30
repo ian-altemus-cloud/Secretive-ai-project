@@ -160,8 +160,11 @@ resource "aws_iam_role_policy" "ecs_task_policy" {
       {
         Effect   = "Allow"
         Action   = ["bedrock:InvokeModel"]
-        Resource = var.bedrock_model_arn
-      },
+        Resource = [
+          var.bedrock_model_arn,
+          "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0"
+        ]
+          },
       {
         Effect   = "Allow"
         Action   = ["secretsmanager:GetSecretValue"]
