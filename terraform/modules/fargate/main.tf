@@ -89,6 +89,10 @@ resource "aws_ecs_task_definition" "main" {
         value = "us-east-1"
       },
       {
+        name = "BEDROCK_MODEL_ID"
+        value = "anthropic.claude-haiku-4-5-20251001-v1:0"
+      },
+      {
         name  = "PYTHONUNBUFFERED"
         value = "1"
       }
