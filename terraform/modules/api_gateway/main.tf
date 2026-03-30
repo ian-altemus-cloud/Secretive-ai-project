@@ -106,6 +106,13 @@ resource "aws_api_gateway_method_response" "webhook_get_200" {
   status_code = "200"
 }
 
+resource "aws_api_gateway_method_response" "webhook_post_200" {
+  http_method = aws_api_gateway_method.webhook_post.http_method
+  resource_id = aws_api_gateway_resource.webhook.id
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  status_code = "200"
+}
+
 resource "aws_api_gateway_integration_response" "webhook_get" {
   http_method = aws_api_gateway_method.webhook_get.http_method
   resource_id = aws_api_gateway_resource.webhook.id
@@ -120,6 +127,20 @@ resource "aws_api_gateway_integration_response" "webhook_get" {
   depends_on = [aws_api_gateway_integration.webhook_get]
 }
 
+resource "aws_api_gateway_integration_response" "webhook_post" {
+  http_method = aws_api_gateway_method.webhook_post.http_method
+  resource_id = aws_api_gateway_resource.webhook.id
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  status_code = aws_api_gateway_method_response.webhook_post_200.status_code
+  selection_pattern = ""
+
+  response_templates = {
+    "application/json" = ""
+  }
+
+  depends_on = [aws_api_gateway_integration.webhook_post]
+}
+
 # Deployment
 resource "aws_api_gateway_deployment" "main" {
   rest_api_id = aws_api_gateway_rest_api.main.id
@@ -129,14 +150,17 @@ resource "aws_api_gateway_deployment" "main" {
       aws_api_gateway_integration.webhook_post,
       aws_api_gateway_integration.webhook_get,
       aws_api_gateway_integration_response.webhook_get,
-      aws_api_gateway_method_response.webhook_get_200
+      aws_api_gateway_integration_response.webhook_post,
+      aws_api_gateway_method_response.webhook_get_200,
+      aws_api_gateway_method_response.webhook_post_200
     ]))
   }
 
   depends_on = [
     aws_api_gateway_integration.webhook_post,
     aws_api_gateway_integration.webhook_get,
-    aws_api_gateway_integration_response.webhook_get
+    aws_api_gateway_integration_response.webhook_get,
+     aws_api_gateway_integration_response.webhook_post
   ]
     lifecycle {
     create_before_destroy = true
