@@ -104,6 +104,7 @@ def process_message(messaging: dict) -> None:
 
         # Get conversation history from DynamoDB
         history = get_conversation_history(sender_id)
+        print(f"History retrieved: {history}", flush=True)
 
         # Save incoming user message
         save_message(sender_id, 'user', message_text)
