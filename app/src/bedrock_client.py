@@ -42,12 +42,11 @@ def get_response(conversation_history: list, new_message: str) -> str:
         "messages": messages
     })
 
-    print(f"Invoking Bedrock model: {MODEL_ID}")
     response = bedrock.invoke_model(
         modelId=MODEL_ID,
         body=body,
     )
-    print(f"Bedrock invoke successful")
+
 
     response_body = json.loads(response['body'].read())
 
