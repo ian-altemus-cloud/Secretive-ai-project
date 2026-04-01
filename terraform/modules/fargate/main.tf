@@ -128,6 +128,10 @@ resource "aws_ecs_service" "main" {
     assign_public_ip = false
   }
 
+  service_registries {
+    registry_arn = "arn:aws:servicediscovery:us-east-1:894943009636:service/srv-rcr3ar5s6rhreibx"
+  }
+
   tags = {
     Name        = "${var.project_name}-${var.environment}-service"
     Environment = var.environment
