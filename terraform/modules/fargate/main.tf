@@ -95,6 +95,25 @@ resource "aws_ecs_task_definition" "main" {
       {
         name  = "PYTHONUNBUFFERED"
         value = "1"
+      },
+      {
+        name = "AI_PROVIDER"
+        value = "anthropic"
+      },
+      {
+        name = "GOOGLE_SPREADSHEET_ID"
+        value ="1hcom7y5xzJP2V0GhHDeCUtE7Ms0r7KNX8xoTvjpfZIY"
+      }
+    ]
+
+    secrets = [
+      {
+        name = "ANTHROPIC_API_KEY"
+        valueFrom = "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-api-key-JLF2jL"
+      },
+      {
+        name = "GOOGLE_SHEETS_SECRET_ARN"
+        valueFrom = "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-nail-bar/dev/google-sheets-credentials-IM5gxg"
       }
     ]
 
@@ -173,6 +192,25 @@ resource "aws_iam_role_policy" "ecs_task_policy" {
         Effect   = "Allow"
         Action   = ["secretsmanager:GetSecretValue"]
         Resource = var.google_sheets_secret_arn
+      }
+    ]
+  })
+}
+resource "aws_iam_role_policy" "ecs_execution_secrets_policy" {
+  name = "${var.project_name}-${var.environment}-ecs-execution-secrets-policy"
+  role = aws_iam_role.ecs_execution_role.id
+
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = ["secretsmanager:GetSecretValue"]
+        Resource = [
+          "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-api-key-JLF2jL",
+          "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-nail-bar/dev/google-sheets-credentials-IM5gxg"
+        ]
       }
     ]
   })
