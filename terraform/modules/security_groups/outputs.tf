@@ -7,3 +7,11 @@ output "fargate_sg_id" {
   description = "ID of the Fargate security group"
   value       = aws_security_group.fargate.id
 }
+output "prometheus_sg_id" {
+  description = "ID of the Prometheus security group"
+  value       = aws_security_group.prometheus.id
+}
+output "grafana_sg_id" {
+  description = "ID of the Grafana security group"
+  value       = aws_security_group.grafana.id
+}
