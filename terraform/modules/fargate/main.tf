@@ -106,7 +106,7 @@ resource "aws_ecs_task_definition" "main" {
       },
         {
         name = "GOOGLE_SHEETS_SECRET_ARN"
-        valueFrom = "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-nail-bar/dev/google-sheets-credentials-IM5gxg"
+        value = "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-nail-bar/dev/google-sheets-credentials-IM5gxg"
       }
     ]
 
