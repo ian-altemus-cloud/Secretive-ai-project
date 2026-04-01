@@ -50,7 +50,7 @@ resource "aws_security_group" "fargate" {
     from_port       = 8000
     to_port         = 8000
     protocol        = "tcp"
-    security_groups = [aws_security_group.prometheus.id]
+    cidr_blocks = ["10.0.0.0/16"]
     description     = "Allow Prometheus to scrape metrics"
   }
   egress {
@@ -76,7 +76,7 @@ resource "aws_security_group" "grafana" {
     from_port   = 9090
     to_port     = 9090
     protocol    = "tcp"
-    security_groups = [aws_security_group.prometheus.id]
+    cidr_blocks = ["10.0.0.0/16"]
     description = "Allow only outbound to prometheus sg"
   }
   ingress {
@@ -103,7 +103,7 @@ resource "aws_security_group" "prometheus" {
     from_port   = 9090
     to_port     = 9090
     protocol    = "tcp"
-    security_groups = [aws_security_group.grafana.id]
+    cidr_blocks = ["10.0.0.0/16"]
     description = "Allow only inbound from grafana sg"
   }
   egress {
