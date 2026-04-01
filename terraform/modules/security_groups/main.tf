@@ -86,6 +86,13 @@ resource "aws_security_group" "grafana" {
     cidr_blocks = ["76.32.56.93/32"]
     description = "Allow only inbound from the internet"
   }
+    egress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "HTTPS to ECR and internet"
+  }
 
     tags = {
     Name        = "${var.project_name}-${var.environment}-grafana-sg"
@@ -93,6 +100,7 @@ resource "aws_security_group" "grafana" {
     Project     = var.project_name
   }
 }
+
 
 resource "aws_security_group" "prometheus" {
   name        = "${var.project_name}-${var.environment}-prometheus-sg"
@@ -112,6 +120,13 @@ resource "aws_security_group" "prometheus" {
     protocol    = "tcp"
     security_groups = [aws_security_group.fargate.id]
     description = "Allow only outbound to fargate flask app"
+  }
+    egress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "HTTPS to ECR and internet"
   }
     tags = {
     Name        = "${var.project_name}-${var.environment}-prometheus-sg"
