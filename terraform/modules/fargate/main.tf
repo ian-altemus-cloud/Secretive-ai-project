@@ -103,6 +103,10 @@ resource "aws_ecs_task_definition" "main" {
       {
         name = "GOOGLE_SPREADSHEET_ID"
         value ="1hcom7y5xzJP2V0GhHDeCUtE7Ms0r7KNX8xoTvjpfZIY"
+      },
+        {
+        name = "GOOGLE_SHEETS_SECRET_ARN"
+        valueFrom = "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-nail-bar/dev/google-sheets-credentials-IM5gxg"
       }
     ]
 
@@ -111,10 +115,6 @@ resource "aws_ecs_task_definition" "main" {
         name = "ANTHROPIC_API_KEY"
         valueFrom = "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-api-key-JLF2jL"
       },
-      {
-        name = "GOOGLE_SHEETS_SECRET_ARN"
-        valueFrom = "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-nail-bar/dev/google-sheets-credentials-IM5gxg"
-      }
     ]
 
     logConfiguration = {
