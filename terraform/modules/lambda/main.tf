@@ -24,9 +24,9 @@ resource "aws_lambda_function" "followup" {
 
   environment {
     variables = {
-      DYNAMODB_TABLE_NAME    = var.dynamodb_table_name
-      META_API_TOKEN_ARN     = var.meta_api_token_arn
-      ANTHROPIC_API_KEY_ARN  = var.anthropic_api_secret_arn
+      DYNAMODB_TABLE_NAME      = var.dynamodb_table_name
+      META_API_TOKEN_ARN       = var.meta_api_token_arn
+      ANTHROPIC_API_KEY_ARN    = var.anthropic_api_secret_arn
       GOOGLE_SHEETS_SECRET_ARN = var.google_sheets_secret_arn
     }
   }

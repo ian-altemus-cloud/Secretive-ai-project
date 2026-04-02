@@ -49,8 +49,8 @@ resource "aws_iam_role" "observability_task_role" {
   }
 }
 resource "aws_service_discovery_private_dns_namespace" "main" {
-  name        = "${var.project_name}-${var.environment}.local"
-  vpc         = var.vpc_id
+  name = "${var.project_name}-${var.environment}.local"
+  vpc  = var.vpc_id
 
   tags = {
     Name        = "${var.project_name}-${var.environment}.local"

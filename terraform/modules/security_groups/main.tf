@@ -46,12 +46,12 @@ resource "aws_security_group" "fargate" {
     security_groups = [aws_security_group.alb.id]
     description     = "HTTP from ALB only"
   }
-   ingress {
-    from_port       = 8000
-    to_port         = 8000
-    protocol        = "tcp"
+  ingress {
+    from_port   = 8000
+    to_port     = 8000
+    protocol    = "tcp"
     cidr_blocks = ["10.0.0.0/16"]
-    description     = "Allow Prometheus to scrape metrics"
+    description = "Allow Prometheus to scrape metrics"
   }
   egress {
     from_port   = 443
@@ -86,7 +86,7 @@ resource "aws_security_group" "grafana" {
     cidr_blocks = ["76.32.56.93/32"]
     description = "Allow only inbound from the internet"
   }
-    egress {
+  egress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
@@ -94,7 +94,7 @@ resource "aws_security_group" "grafana" {
     description = "HTTPS to ECR and internet"
   }
 
-    tags = {
+  tags = {
     Name        = "${var.project_name}-${var.environment}-grafana-sg"
     Environment = var.environment
     Project     = var.project_name
@@ -115,20 +115,20 @@ resource "aws_security_group" "prometheus" {
     description = "Allow only inbound from grafana sg"
   }
   egress {
-    from_port   = 8000
-    to_port     = 8000
-    protocol    = "tcp"
+    from_port       = 8000
+    to_port         = 8000
+    protocol        = "tcp"
     security_groups = [aws_security_group.fargate.id]
-    description = "Allow only outbound to fargate flask app"
+    description     = "Allow only outbound to fargate flask app"
   }
-    egress {
+  egress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
     description = "HTTPS to ECR and internet"
   }
-    tags = {
+  tags = {
     Name        = "${var.project_name}-${var.environment}-prometheus-sg"
     Environment = var.environment
     Project     = var.project_name

@@ -25,7 +25,7 @@ variable "ecs_cluster_id" {
 }
 variable "flask_service_discovery_name" {
   description = "Name of the flask DNS resolver"
-  type = string
+  type        = string
 }
 variable "grafana_sg_id" {
   description = "Security group ID for Grafana"
