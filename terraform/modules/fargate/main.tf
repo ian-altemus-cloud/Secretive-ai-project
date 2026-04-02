@@ -77,19 +77,19 @@ resource "aws_ecs_task_definition" "main" {
 
     environment = [
       {
-        name = "DYNAMODB_TABLE_NAME"
+        name  = "DYNAMODB_TABLE_NAME"
         value = "${var.project_name}-${var.environment}-dynamodb"
       },
       {
-        name = "SQS_QUEUE_URL"
+        name  = "SQS_QUEUE_URL"
         value = "https://sqs.us-east-1.amazonaws.com/894943009636/${var.project_name}-${var.environment}-queue"
       },
       {
-        name = "AWS_DEFAULT_REGION"
+        name  = "AWS_DEFAULT_REGION"
         value = "us-east-1"
       },
       {
-        name = "BEDROCK_MODEL_ID"
+        name  = "BEDROCK_MODEL_ID"
         value = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
       },
       {
@@ -97,22 +97,22 @@ resource "aws_ecs_task_definition" "main" {
         value = "1"
       },
       {
-        name = "AI_PROVIDER"
+        name  = "AI_PROVIDER"
         value = "anthropic"
       },
       {
-        name = "GOOGLE_SPREADSHEET_ID"
-        value ="1hcom7y5xzJP2V0GhHDeCUtE7Ms0r7KNX8xoTvjpfZIY"
+        name  = "GOOGLE_SPREADSHEET_ID"
+        value = "1hcom7y5xzJP2V0GhHDeCUtE7Ms0r7KNX8xoTvjpfZIY"
       },
-        {
-        name = "GOOGLE_SHEETS_SECRET_ARN"
+      {
+        name  = "GOOGLE_SHEETS_SECRET_ARN"
         value = "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-nail-bar/dev/google-sheets-credentials-IM5gxg"
       }
     ]
 
     secrets = [
       {
-        name = "ANTHROPIC_API_KEY"
+        name      = "ANTHROPIC_API_KEY"
         valueFrom = "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-api-key-JLF2jL"
       },
     ]
@@ -159,8 +159,8 @@ resource "aws_ecs_service" "main" {
 }
 
 resource "aws_cloudwatch_log_group" "main" {
-    name = "/ecs/${var.project_name}-${var.environment}"
-    retention_in_days = 14
+  name              = "/ecs/${var.project_name}-${var.environment}"
+  retention_in_days = 14
 }
 
 resource "aws_iam_role_policy" "ecs_task_policy" {
@@ -196,8 +196,8 @@ resource "aws_iam_role_policy" "ecs_task_policy" {
         Resource = "arn:aws:iam::894943009636:role/${var.project_name}-${var.environment}-scheduler-role"
       },
       {
-        Effect   = "Allow"
-        Action   = ["bedrock:InvokeModel"]
+        Effect = "Allow"
+        Action = ["bedrock:InvokeModel"]
         Resource = [
           "arn:aws:bedrock:*::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0",
           "arn:aws:bedrock:us-east-1:894943009636:inference-profile/us.anthropic.claude-haiku-4-5-20251001-v1:0"
