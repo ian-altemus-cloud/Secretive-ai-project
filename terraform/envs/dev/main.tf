@@ -97,3 +97,18 @@ module "observability" {
   prometheus_sg_id             = module.security_groups.prometheus_sg_id
   flask_service_discovery_name = "flask.secretive-nail-bar-dev.local"
 }
+
+module "followup_lambda" {
+  source = "../../modules/lambda"
+  environment = var.environment
+  project_name = var.project_name
+  vpc_id = module.vpc.vpc_id
+  private_subnet_ids = module.vpc.private_subnet_ids
+  dynamodb_table_arn = module.DynamoDB.dynamodb_table_arn
+  google_sheets_secret_arn = "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-nail-bar/dev/google-sheets-credentials-IM5gxg"
+  lambda_sg_id = module.security_groups.lambda_sg_id
+  meta_api_token_arn = "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-nail-bar-dev/meta-api-token-xs95gz"
+  dynamodb_table_name = module.DynamoDB.dynamodb_table_name
+  anthropic_api_secret_arn = "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-api-key-JLF2jL"
+  bedrock_model_arn        = "arn:aws:bedrock:us-east-1:894943009636:inference-profile/us.anthropic.claude-haiku-4-5-20251001-v1:0"
+}

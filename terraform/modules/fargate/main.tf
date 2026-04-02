@@ -181,6 +181,21 @@ resource "aws_iam_role_policy" "ecs_task_policy" {
         Resource = var.dynamodb_table_arn
       },
       {
+        Effect = "Allow"
+        Action = [
+          "scheduler:CreateSchedule",
+          "scheduler:DeleteSchedule",
+          "scheduler:GetSchedule",
+          "scheduler:UpdateSchedule"
+        ]
+        Resource = "arn:aws:scheduler:us-east-1:894943009636:schedule/default/follow-up-*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["iam:PassRole"]
+        Resource = "arn:aws:iam::894943009636:role/${var.project_name}-${var.environment}-scheduler-role"
+      },
+      {
         Effect   = "Allow"
         Action   = ["bedrock:InvokeModel"]
         Resource = [
