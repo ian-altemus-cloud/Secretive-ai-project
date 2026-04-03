@@ -73,6 +73,8 @@ module "fargate" {
   fargate_sg_id            = module.security_groups.fargate_sg_id
   sqs_queue_arn            = module.sqs.sqs_arn
   dynamodb_table_arn       = module.DynamoDB.dynamodb_table_arn
+  followup_lambda_arn      = module.followup_lambda.lambda_arn
+  scheduler_role_arn       = module.followup_lambda.scheduler_role_arn
   bedrock_model_arn        = "arn:aws:bedrock:us-east-1:894943009636:inference-profile/us.anthropic.claude-haiku-4-5-20251001-v1:0"
   google_sheets_secret_arn = "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-nail-bar/dev/google-sheets-credentials-IM5gxg"
 }
