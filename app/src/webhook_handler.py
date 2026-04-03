@@ -135,6 +135,47 @@ def process_message(messaging: dict) -> None:
     except Exception as e:
         print(f"Error processing message: {e}")
 
+def manage_followup_schedule(instagram_user_id: str, cancel: bool = False) -> None:
+    import boto3
+    from datetime import datetime, timedelta
+    import pytz
+
+    scheduler = boto3.client('scheduler', region_name='us-east-1')
+    schedule_name = f"follow-up-{instagram_user_id}"
+    lambda_arn = os.environ.get('FOLLOWUP_LAMBDA_ARN')
+    scheduler_role_arn = os.environ.get('SCHEDULER_ROLE_ARN')
+
+    try:
+        scheduler.delete_schedule(Name=schedule_name, GroupName='default')
+    except scheduler.exceptions.ResourceNotFoundException:
+        pass
+
+    if cancel:
+        return
+
+    pst = pytz.timezone('America/Los_Angeles')
+    now = datetime.now(pst)
+    target = now + timedelta(hours=24)
+
+    delivery = target.replace(hour=10, minute=30, second=0, microsecond=0)
+    if delivery < target:
+        delivery += timedelta(days=1)
+
+    schedule_expression = f"at({delivery.strftime('%Y-%m-%dT%H:%M:%S')})"
+
+    scheduler.create_schedule(
+        Name=schedule_name,
+        GroupName='default',
+        ScheduleExpression=schedule_expression,
+        ScheduleExpressionTimezone='America/Los_Angeles',
+        FlexibleTimeWindow={'Mode': 'OFF'},
+        Target={
+            'Arn': lambda_arn,
+            'RoleArn': scheduler_role_arn,
+            'Input': json.dumps({'instagram_user_id': instagram_user_id})
+        }
+    )
+    print(f"Follow_up scheduled for {instagram_user_id} at {delivery}", flush=True)
 
 def run_sqs_consumer() -> None:
     """
@@ -159,6 +200,10 @@ def run_sqs_consumer() -> None:
 
                 try:
                     process_message(body)
+                    sender_id = body.get('sender', {}).get('id')
+                    if sender_id:
+                        booking_detected = 'booking' in str(body).lower()
+                        manage_followup_schedule(sender_id, cancel=booking_detected)
                     sqs.delete_message(
                         QueueUrl=QUEUE_URL,
                         ReceiptHandle=msg['ReceiptHandle']

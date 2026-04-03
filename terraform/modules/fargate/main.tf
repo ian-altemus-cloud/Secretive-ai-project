@@ -107,6 +107,14 @@ resource "aws_ecs_task_definition" "main" {
       {
         name  = "GOOGLE_SHEETS_SECRET_ARN"
         value = "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-nail-bar/dev/google-sheets-credentials-IM5gxg"
+      },
+      {
+        name = "FOLLOWUP_LAMBDA_ARN"
+        value = var.followup_lambda_arn
+      },
+      {
+        name = "SCHEDULER_ROLE_ARN"
+        value = var.scheduler_role_arn
       }
     ]
 

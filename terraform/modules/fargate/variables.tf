@@ -70,3 +70,11 @@ variable "google_sheets_secret_arn" {
   description = "google sheets arn"
   type        = string
 }
+variable "followup_lambda_arn" {
+  description = "ARN of the follow-up Lambda function"
+  type = string
+}
+variable "scheduler_role_arn" {
+  description = "ARN of the EventBridge Scheduler IAM role"
+  type = string
+}
