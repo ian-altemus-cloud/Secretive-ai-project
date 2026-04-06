@@ -145,12 +145,17 @@ def manage_followup_schedule(instagram_user_id: str, cancel: bool = False) -> No
     lambda_arn = os.environ.get('FOLLOWUP_LAMBDA_ARN')
     scheduler_role_arn = os.environ.get('SCHEDULER_ROLE_ARN')
 
+    print(f"manage_followup_schedule called: user={instagram_user_id}, cancel={cancel}", flush=True)
+    print(f"lambda_arn={lambda_arn}, scheduler_role_arn={scheduler_role_arn}", flush=True)
+
     try:
         scheduler.delete_schedule(Name=schedule_name, GroupName='default')
+        print(f"deleted existing schedule for {instagram_user_id}", flush=True)
     except scheduler.exceptions.ResourceNotFoundException:
         pass
 
     if cancel:
+        print(f"Cancel=True, skipping schedule creation for {instagram_user_id}", flush=True)
         return
 
     pst = pytz.timezone('America/Los_Angeles')
@@ -162,20 +167,25 @@ def manage_followup_schedule(instagram_user_id: str, cancel: bool = False) -> No
         delivery += timedelta(days=1)
 
     schedule_expression = f"at({delivery.strftime('%Y-%m-%dT%H:%M:%S')})"
+    print(f"Creating schedule: {schedule_expression} for {instagram_user_id}", flush=True)
 
-    scheduler.create_schedule(
-        Name=schedule_name,
-        GroupName='default',
-        ScheduleExpression=schedule_expression,
-        ScheduleExpressionTimezone='America/Los_Angeles',
-        FlexibleTimeWindow={'Mode': 'OFF'},
-        Target={
-            'Arn': lambda_arn,
-            'RoleArn': scheduler_role_arn,
-            'Input': json.dumps({'instagram_user_id': instagram_user_id})
-        }
-    )
-    print(f"Follow_up scheduled for {instagram_user_id} at {delivery}", flush=True)
+    try:
+
+        scheduler.create_schedule(
+            Name=schedule_name,
+            GroupName='default',
+            ScheduleExpression=schedule_expression,
+            ScheduleExpressionTimezone='America/Los_Angeles',
+            FlexibleTimeWindow={'Mode': 'OFF'},
+            Target={
+                'Arn': lambda_arn,
+                'RoleArn': scheduler_role_arn,
+                'Input': json.dumps({'instagram_user_id': instagram_user_id})
+            }
+        )
+        print(f"Follow_up scheduled for {instagram_user_id} at {delivery}", flush=True)
+    except Exception as e:
+        print(f"Error creating schedule for {instagram_user_id}: {e}", flush=True)
 
 def run_sqs_consumer() -> None:
     """
