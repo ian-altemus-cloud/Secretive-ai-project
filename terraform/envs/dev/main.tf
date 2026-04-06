@@ -114,3 +114,6 @@ module "followup_lambda" {
   anthropic_api_secret_arn = "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-api-key-JLF2jL"
   bedrock_model_arn        = "arn:aws:bedrock:us-east-1:894943009636:inference-profile/us.anthropic.claude-haiku-4-5-20251001-v1:0"
 }
+
+
+
