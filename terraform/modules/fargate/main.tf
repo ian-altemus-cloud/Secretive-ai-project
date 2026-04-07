@@ -214,7 +214,9 @@ resource "aws_iam_role_policy" "ecs_task_policy" {
       {
         Effect   = "Allow"
         Action   = ["secretsmanager:GetSecretValue"]
-        Resource = var.google_sheets_secret_arn
+        Resource = [var.google_sheets_secret_arn
+                  "arnaws:secretsmanager:us-east-1:894943009636:secret:sl_dashboard_api_key-5h8EKS"
+        ]
       }
     ]
   })
