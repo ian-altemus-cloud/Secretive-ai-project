@@ -59,13 +59,13 @@ def get_conversations() -> list:
     Returns a list of dicts matching the column headers.
     """
     try:
-        service = et.sheets_service()
+        service = get.sheets_service()
         results = service.spreadsheets().values().get(
             spreadsheetId=SPREADSHEET_ID,
             range=f'{SHEET_NAME}!A:G'
         ).execute()
 
-        rows = result.get('values', [])
+        rows = results.get('values', [])
         if not rows:
             return []
 
@@ -75,7 +75,7 @@ def get_conversations() -> list:
             padded = row + [''] * (len(headers) - len(row))
             conversations.append(dict(zip(headers, padded)))
 
-            return conversations
+        return conversations
     except Exception as e:
         print(f"Error logging to Google Sheets: {e}", flush=True)
         return []
