@@ -52,3 +52,30 @@ def log_conversation(instagram_user_id: str, source: str, intent: str,
 
     except Exception as e:
         print(f"Error logging to Google Sheets: {e}")
+
+def get_conversations() -> list:
+    """
+    Read all conversations from Google Sheets.
+    Returns a list of dicts matching the column headers.
+    """
+    try:
+        service = et.sheets_service()
+        results = service.spreadsheets().values().get(
+            spreadsheetId=SPREADSHEET_ID,
+            range=f'{SHEET_NAME}!A:G'
+        ).execute()
+
+        rows = result.get('values', [])
+        if not rows:
+            return []
+
+        headers = rows[0]
+        conversations = []
+        for row in rows[1:]:
+            padded = row + [''] * (len(headers) - len(row))
+            conversations.append(dict(zip(headers, padded)))
+
+            return conversations
+    except Exception as e:
+        print(f"Error logging to Google Sheets: {e}", flush=True)
+        return []

@@ -115,6 +115,10 @@ resource "aws_ecs_task_definition" "main" {
       {
         name = "SCHEDULER_ROLE_ARN"
         value = var.scheduler_role_arn
+      },
+      {
+        name = "DASHBOARD_API_KEY_ARN"
+        value = "arn:aws:secretsmanager:us-east-1:894943009636:secret:sl_dashboard_api_key-5h8EKS"
       }
     ]
 

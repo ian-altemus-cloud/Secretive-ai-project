@@ -11,7 +11,7 @@ from flask import Flask, request, jsonify
 from metrics import track_dm_received, track_booking_link_sent, track_meta_error, start_metrics_server
 from bedrock_client import get_response
 from conversation_store import  get_conversation_history, save_message
-from sheets_logger import log_conversation
+from sheets_logger import log_conversation, get_conversations
 
 
 app = Flask(__name__)
@@ -22,6 +22,7 @@ QUEUE_URL = os.environ.get('SQS_QUEUE_URL')
 VERIFY_TOKEN = os.environ.get('META_VERIFY_TOKEN')
 APP_SECRET = os.environ.get('META_APP_SECRET')
 META_ACCESS_TOKEN = os.environ.get('META_ACCESS_TOKEN')
+DASHBOARD_SECRET_ARN = os.environ.get('DASHBOARD_API_KEY_ARN')
 META_API_URL = "https://graph.facebook.com/v18.0/me/messages"
 
 def verify_signature(payload, signature):
@@ -225,6 +226,26 @@ def run_sqs_consumer() -> None:
             print(f"SQS consumer error: {e}")
             time.sleep(5)
 
+def get_dashboard_api_key() -> str:
+    secret = boto3.client('secretsmanager', region_name='us-east-1').get_secret_value(
+        SecretId=DASHBOARD_SECRET_ARN
+    )
+    return secret['SecretString']
+
+@app.route('/api/conversations', methods=['GET'])
+def conversations_endpoint():
+    auth = request.headers.get('X-API-Key', '')
+    try:
+        expected = get_dashboard_api_key()
+    except Exception as e:
+        print(f"Error fetching dashboard key: {e}", flush=True)
+        return jsonify({'error': 'Server error'}), 500
+
+    if not hmac.compare_digest(auth, expected):
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    data = get_conversations()
+    return jsonify(data), 200
 
 if __name__ == '__main__':
     from threading import Thread
