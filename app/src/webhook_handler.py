@@ -12,10 +12,11 @@ from metrics import track_dm_received, track_booking_link_sent, track_meta_error
 from bedrock_client import get_response
 from conversation_store import  get_conversation_history, save_message
 from sheets_logger import log_conversation, get_conversations
+from flask_cors import CORS
 
 
 app = Flask(__name__)
-
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 # SQS client
 sqs = boto3.client('sqs',region_name='us-east-1')
 QUEUE_URL = os.environ.get('SQS_QUEUE_URL')
