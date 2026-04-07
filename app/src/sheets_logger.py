@@ -59,7 +59,7 @@ def get_conversations() -> list:
     Returns a list of dicts matching the column headers.
     """
     try:
-        service = get.sheets_service()
+        service = get_sheets_service()
         results = service.spreadsheets().values().get(
             spreadsheetId=SPREADSHEET_ID,
             range=f'{SHEET_NAME}!A:G'
