@@ -14,11 +14,11 @@ from conversation_store import  get_conversation_history, save_message
 from sheets_logger import log_conversation, get_conversations
 from flask_cors import CORS
 
-
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
+
 # SQS client
-sqs = boto3.client('sqs',region_name='us-east-1')
+sqs = boto3.client('sqs', region_name='us-east-1')
 QUEUE_URL = os.environ.get('SQS_QUEUE_URL')
 VERIFY_TOKEN = os.environ.get('META_VERIFY_TOKEN')
 APP_SECRET = os.environ.get('META_APP_SECRET')
