@@ -78,3 +78,7 @@ variable "scheduler_role_arn" {
   description = "ARN of the EventBridge Scheduler IAM role"
   type = string
 }
+variable "target_group_arn" {
+  description = "ALB target group ARN for the Flask service"
+  type        = string
+}

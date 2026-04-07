@@ -75,6 +75,7 @@ module "fargate" {
   dynamodb_table_arn       = module.DynamoDB.dynamodb_table_arn
   followup_lambda_arn      = module.followup_lambda.lambda_arn
   scheduler_role_arn       = module.followup_lambda.scheduler_role_arn
+  target_group_arn         = module.alb.target_group_arn
   bedrock_model_arn        = "arn:aws:bedrock:us-east-1:894943009636:inference-profile/us.anthropic.claude-haiku-4-5-20251001-v1:0"
   google_sheets_secret_arn = "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-nail-bar/dev/google-sheets-credentials-IM5gxg"
 }
@@ -114,6 +115,13 @@ module "followup_lambda" {
   anthropic_api_secret_arn = "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-api-key-JLF2jL"
   bedrock_model_arn        = "arn:aws:bedrock:us-east-1:894943009636:inference-profile/us.anthropic.claude-haiku-4-5-20251001-v1:0"
 }
-
+module "alb" {
+  source            = "../../modules/alb"
+  project_name      = var.project_name
+  environment       = var.environment
+  vpc_id            = module.vpc.vpc_id
+  public_subnet_ids = ["subnet-0b6c70f2de03463f6", "subnet-0e82c56aaa6daa7cc"]
+  alb_sg_id         = module.security_groups.alb_sg_id
+}
 
 

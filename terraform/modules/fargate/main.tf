@@ -158,6 +158,11 @@ resource "aws_ecs_service" "main" {
     security_groups  = [var.fargate_sg_id]
     assign_public_ip = false
   }
+  load_balancer {
+  target_group_arn = var.target_group_arn
+  container_name   = "${var.project_name}-${var.environment}"
+  container_port   = 80
+  }
 
   service_registries {
     registry_arn = "arn:aws:servicediscovery:us-east-1:894943009636:service/srv-rcr3ar5s6rhreibx"
