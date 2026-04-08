@@ -82,3 +82,7 @@ variable "target_group_arn" {
   description = "ALB target group ARN for the Flask service"
   type        = string
 }
+variable "nlb_target_group_arn" {
+  description = "NLB target group ARN for VPC Link"
+  type        = string
+}

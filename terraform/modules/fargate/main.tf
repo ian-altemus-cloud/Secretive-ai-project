@@ -170,8 +170,15 @@ resource "aws_ecs_service" "main" {
     security_groups  = [var.fargate_sg_id]
     assign_public_ip = false
   }
+  # ALB target group - for /api/conversations dashboard endpoint
   load_balancer {
     target_group_arn = var.target_group_arn
+    container_name   = "${var.project_name}-${var.environment}"
+    container_port   = 80
+  }
+  # NLB target group - for VPC Link webhook GET verification
+  load_balancer {
+    target_group_arn = var.nlb_target_group_arn
     container_name   = "${var.project_name}-${var.environment}"
     container_port   = 80
   }
