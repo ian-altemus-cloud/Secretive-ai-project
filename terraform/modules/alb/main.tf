@@ -76,3 +76,45 @@ resource "aws_lb_listener_rule" "conversations" {
     target_group_arn = aws_lb_target_group.flask.arn
   }
 }
+
+resource "aws_lb_listener_rule" "webhook_get" {
+  listener_arn = "aws_lb_listener.http.arn"
+  priority = 20
+
+  condition {
+    path_pattern {
+      values = ["/webhook"]
+    }
+  }
+
+  condition {
+    http_request_method {
+      values = ["GET"]
+    }
+  }
+  action {
+    type = "forward"
+    target_group_arn = aws_lb_target_group.flask.arn
+  }
+}
+
+resource "aws_lb_listener_rule" "webhook_post" {
+  listener_arn = aws_lb_listener.http.arn
+  priority = 30
+
+  condition {
+    path_pattern {
+      values = ["/webhook"]
+    }
+  }
+  condition {
+    http_request_method {
+      values = ["POST"]
+    }
+  }
+
+  action {
+    type = "forward"
+    target_group_arn = aws_lb_target_group.flask.arn
+  }
+}
