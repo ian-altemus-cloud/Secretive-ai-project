@@ -47,6 +47,13 @@ resource "aws_security_group" "fargate" {
     description     = "HTTP from ALB only"
   }
   ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+    description = "HTTP from NLB via VPC Link"
+  }
+  ingress {
     from_port   = 8000
     to_port     = 8000
     protocol    = "tcp"

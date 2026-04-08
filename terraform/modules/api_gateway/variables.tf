@@ -27,3 +27,12 @@ variable "aws_account_id" {
   description = "AWS account ID"
   type        = string
 }
+variable "nlb_arn" {
+  description = "ARN of the NLB for VPC Link"
+  type        = string
+}
+
+variable "nlb_dns_name" {
+  description = "DNS name of the NLB for GET proxy integration"
+  type        = string
+}

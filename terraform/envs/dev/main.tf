@@ -89,6 +89,8 @@ module "api_gateway" {
   sqs_queue_arn  = module.sqs.sqs_arn
   sqs_queue_url  = module.sqs.sqs_url
   aws_account_id = "894943009636"
+  nlb_arn      = module.nlb.nlb_arn
+  nlb_dns_name = module.nlb.nlb_dns_name
 }
 module "observability" {
   source                       = "../../modules/observability"
@@ -126,4 +128,10 @@ module "alb" {
   alb_sg_id         = module.security_groups.alb_sg_id
 }
 
-
+module "nlb" {
+  source             = "../../modules/nlb"
+  project_name       = var.project_name
+  environment        = var.environment
+  vpc_id             = module.vpc.vpc_id
+  private_subnet_ids = module.vpc.private_subnet_ids
+}

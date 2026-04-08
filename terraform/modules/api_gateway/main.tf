@@ -92,18 +92,22 @@ resource "aws_api_gateway_integration" "webhook_get" {
   http_method = aws_api_gateway_method.webhook_get.http_method
   resource_id = aws_api_gateway_resource.webhook.id
   rest_api_id = aws_api_gateway_rest_api.main.id
-  type        = "MOCK"
-
-  request_templates = {
-    "application/json" = "{\"statusCode\": 200}"
-  }
+  integration_http_method = "GET"
+  type        = "HTTP_PROXY"
+  uri         = "http://${var.nlb_dns_name}/webhook"
+  connection_type = "VPC_LINK"
+  connection_id = aws_api_gateway_vpc_link.main.id
 }
 
-resource "aws_api_gateway_method_response" "webhook_get_200" {
-  http_method = aws_api_gateway_method.webhook_get.http_method
-  resource_id = aws_api_gateway_resource.webhook.id
-  rest_api_id = aws_api_gateway_rest_api.main.id
-  status_code = "200"
+resource "aws_api_gateway_vpc_link" "main" {
+  name        = "${var.project_name}-${var.environment}-vpc-link"
+  target_arns = [var.nlb_arn]
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-vpc-link"
+    Environment = var.environment
+    Project     = var.project_name
+  }
 }
 
 resource "aws_api_gateway_method_response" "webhook_post_200" {
@@ -111,20 +115,6 @@ resource "aws_api_gateway_method_response" "webhook_post_200" {
   resource_id = aws_api_gateway_resource.webhook.id
   rest_api_id = aws_api_gateway_rest_api.main.id
   status_code = "200"
-}
-
-resource "aws_api_gateway_integration_response" "webhook_get" {
-  http_method       = aws_api_gateway_method.webhook_get.http_method
-  resource_id       = aws_api_gateway_resource.webhook.id
-  rest_api_id       = aws_api_gateway_rest_api.main.id
-  status_code       = aws_api_gateway_method_response.webhook_get_200.status_code
-  selection_pattern = ""
-
-  response_templates = {
-    "application/json" = ""
-  }
-
-  depends_on = [aws_api_gateway_integration.webhook_get]
 }
 
 resource "aws_api_gateway_integration_response" "webhook_post" {
@@ -148,10 +138,7 @@ resource "aws_api_gateway_deployment" "main" {
   triggers = {
     redeployment = sha1(jsonencode([
       aws_api_gateway_integration.webhook_post,
-      aws_api_gateway_integration.webhook_get,
-      aws_api_gateway_integration_response.webhook_get,
       aws_api_gateway_integration_response.webhook_post,
-      aws_api_gateway_method_response.webhook_get_200,
       aws_api_gateway_method_response.webhook_post_200
     ]))
   }
@@ -159,7 +146,6 @@ resource "aws_api_gateway_deployment" "main" {
   depends_on = [
     aws_api_gateway_integration.webhook_post,
     aws_api_gateway_integration.webhook_get,
-    aws_api_gateway_integration_response.webhook_get,
     aws_api_gateway_integration_response.webhook_post
   ]
   lifecycle {
