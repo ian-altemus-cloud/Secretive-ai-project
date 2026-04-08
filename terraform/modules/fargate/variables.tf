@@ -72,11 +72,11 @@ variable "google_sheets_secret_arn" {
 }
 variable "followup_lambda_arn" {
   description = "ARN of the follow-up Lambda function"
-  type = string
+  type        = string
 }
 variable "scheduler_role_arn" {
   description = "ARN of the EventBridge Scheduler IAM role"
-  type = string
+  type        = string
 }
 variable "target_group_arn" {
   description = "ALB target group ARN for the Flask service"

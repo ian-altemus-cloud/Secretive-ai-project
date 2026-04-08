@@ -89,8 +89,8 @@ module "api_gateway" {
   sqs_queue_arn  = module.sqs.sqs_arn
   sqs_queue_url  = module.sqs.sqs_url
   aws_account_id = "894943009636"
-  nlb_arn      = module.nlb.nlb_arn
-  nlb_dns_name = module.nlb.nlb_dns_name
+  nlb_arn        = module.nlb.nlb_arn
+  nlb_dns_name   = module.nlb.nlb_dns_name
 }
 module "observability" {
   source                       = "../../modules/observability"

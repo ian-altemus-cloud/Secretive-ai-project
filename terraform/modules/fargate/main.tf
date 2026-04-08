@@ -109,15 +109,15 @@ resource "aws_ecs_task_definition" "main" {
         value = "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-nail-bar/dev/google-sheets-credentials-IM5gxg"
       },
       {
-        name = "FOLLOWUP_LAMBDA_ARN"
+        name  = "FOLLOWUP_LAMBDA_ARN"
         value = var.followup_lambda_arn
       },
       {
-        name = "SCHEDULER_ROLE_ARN"
+        name  = "SCHEDULER_ROLE_ARN"
         value = var.scheduler_role_arn
       },
       {
-        name = "DASHBOARD_API_KEY_ARN"
+        name  = "DASHBOARD_API_KEY_ARN"
         value = "arn:aws:secretsmanager:us-east-1:894943009636:secret:sl_dashboard_api_key-5h8EKS"
       },
     ]
@@ -171,9 +171,9 @@ resource "aws_ecs_service" "main" {
     assign_public_ip = false
   }
   load_balancer {
-  target_group_arn = var.target_group_arn
-  container_name   = "${var.project_name}-${var.environment}"
-  container_port   = 80
+    target_group_arn = var.target_group_arn
+    container_name   = "${var.project_name}-${var.environment}"
+    container_port   = 80
   }
 
   service_registries {
@@ -233,10 +233,10 @@ resource "aws_iam_role_policy" "ecs_task_policy" {
         ]
       },
       {
-        Effect   = "Allow"
-        Action   = ["secretsmanager:GetSecretValue"]
+        Effect = "Allow"
+        Action = ["secretsmanager:GetSecretValue"]
         Resource = [var.google_sheets_secret_arn,
-                  "arn:aws:secretsmanager:us-east-1:894943009636:secret:sl_dashboard_api_key-5h8EKS"
+          "arn:aws:secretsmanager:us-east-1:894943009636:secret:sl_dashboard_api_key-5h8EKS"
         ]
       }
     ]
