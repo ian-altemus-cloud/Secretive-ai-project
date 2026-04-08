@@ -78,7 +78,7 @@ resource "aws_lb_listener_rule" "conversations" {
 }
 
 resource "aws_lb_listener_rule" "webhook_get" {
-  listener_arn = "aws_lb_listener.http.arn"
+  listener_arn =  aws_lb_listener.http.arn
   priority = 20
 
   condition {
