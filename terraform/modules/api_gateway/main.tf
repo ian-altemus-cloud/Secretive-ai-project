@@ -89,14 +89,14 @@ resource "aws_api_gateway_integration" "webhook_post" {
 }
 
 resource "aws_api_gateway_integration" "webhook_get" {
-  http_method = aws_api_gateway_method.webhook_get.http_method
-  resource_id = aws_api_gateway_resource.webhook.id
-  rest_api_id = aws_api_gateway_rest_api.main.id
+  http_method             = aws_api_gateway_method.webhook_get.http_method
+  resource_id             = aws_api_gateway_resource.webhook.id
+  rest_api_id             = aws_api_gateway_rest_api.main.id
   integration_http_method = "GET"
-  type        = "HTTP_PROXY"
-  uri         = "http://${var.nlb_dns_name}/webhook"
-  connection_type = "VPC_LINK"
-  connection_id = aws_api_gateway_vpc_link.main.id
+  type                    = "HTTP_PROXY"
+  uri                     = "http://${var.nlb_dns_name}/webhook"
+  connection_type         = "VPC_LINK"
+  connection_id           = aws_api_gateway_vpc_link.main.id
 }
 
 resource "aws_api_gateway_vpc_link" "main" {
