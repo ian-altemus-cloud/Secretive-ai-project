@@ -119,7 +119,7 @@ resource "aws_ecs_task_definition" "main" {
       {
         name = "DASHBOARD_API_KEY_ARN"
         value = "arn:aws:secretsmanager:us-east-1:894943009636:secret:sl_dashboard_api_key-5h8EKS"
-      }
+      },
     ]
 
     secrets = [
@@ -127,6 +127,18 @@ resource "aws_ecs_task_definition" "main" {
         name      = "ANTHROPIC_API_KEY"
         valueFrom = "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-api-key-JLF2jL"
       },
+      {
+        name      = "META_APP_SECRET"
+        valueFrom = "arn:aws:secretsmanager:us-east-1:894943009636:secret:META_APP_SECRET-JTVhID"
+      },
+      {
+        name      = "META_ACCESS_TOKEN"
+        valueFrom = "arn:aws:secretsmanager:us-east-1:894943009636:secret:META-ACCESS-TOKEN-Yf2TBG"
+      },
+      {
+        name      = "META_VERIFY_TOKEN"
+        valueFrom = "arn:aws:secretsmanager:us-east-1:894943009636:secret:meta-verify-token-SHC3HQ"
+      }
     ]
 
     logConfiguration = {
@@ -243,7 +255,10 @@ resource "aws_iam_role_policy" "ecs_execution_secrets_policy" {
         Action = ["secretsmanager:GetSecretValue"]
         Resource = [
           "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-api-key-JLF2jL",
-          "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-nail-bar/dev/google-sheets-credentials-IM5gxg"
+          "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-nail-bar/dev/google-sheets-credentials-IM5gxg",
+          "arn:aws:secretsmanager:us-east-1:894943009636:secret:META_APP_SECRET-JTVhID",
+          "arn:aws:secretsmanager:us-east-1:894943009636:secret:META-ACCESS-TOKEN-Yf2TBG",
+          "arn:aws:secretsmanager:us-east-1:894943009636:secret:meta-verify-token-SHC3HQ"
         ]
       }
     ]
