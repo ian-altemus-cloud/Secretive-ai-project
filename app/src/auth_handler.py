@@ -48,10 +48,10 @@ def login():
         'state':         state,
     }
 
+
     meta_url = f"https://www.instagram.com/oauth/authorize?{urlencode(params)}"
     print(f"OAuth login initiated, redirecting to Meta", flush=True)
     return redirect(meta_url)
-
 
 @auth_bp.route('/auth/callback')
 def callback():
@@ -130,4 +130,4 @@ def callback():
 
     print(f"Tenant {instagram_account_id} onboarded successfully", flush=True)
 
-    return redirect('https://silverlinkai.com/connected')
+    return redirect('https://silverlinkai.com/#connected')
