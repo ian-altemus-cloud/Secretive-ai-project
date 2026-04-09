@@ -13,9 +13,12 @@ from bedrock_client import get_response
 from conversation_store import  get_conversation_history, save_message
 from sheets_logger import log_conversation, get_conversations
 from flask_cors import CORS
+from auth_handler import auth_bp
+
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
+app.register_blueprint(auth_bp)
 
 # SQS client
 sqs = boto3.client('sqs', region_name='us-east-1')

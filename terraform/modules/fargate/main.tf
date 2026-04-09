@@ -119,7 +119,15 @@ resource "aws_ecs_task_definition" "main" {
       {
         name  = "TENANT_TABLE"
         value = var.tenant_table_name
-      }
+      },
+      {
+        name  = "META_APP_ID"
+        value = "925927110056867"
+      },
+      {
+        name  = "OAUTH_REDIRECT_URI"
+        value = "https://silverlinkai.com/auth/callback"
+      },
     ]
 
     secrets = [
