@@ -24,7 +24,7 @@ VERIFY_TOKEN = os.environ.get('META_VERIFY_TOKEN')
 APP_SECRET = os.environ.get('META_APP_SECRET')
 META_ACCESS_TOKEN = os.environ.get('META_ACCESS_TOKEN')
 DASHBOARD_SECRET_ARN = os.environ.get('DASHBOARD_API_KEY_ARN')
-META_API_URL = "https://graph.facebook.com/v18.0/me/messages"
+META_API_URL = "https://graph.instagram.com/v21.0/me/messages"
 
 def verify_signature(payload, signature):
     """Verify the request came from Meta using HMAC SHA256"""
@@ -68,19 +68,23 @@ def receive_webhook():
             )
     return jsonify({'status': 'ok'}), 200
 
-
 def send_instagram_message(recipient_id: str, message_text: str) -> bool:
     """Send a message back to Instagram user via Meta Graph API"""
+    print(
+        f"send_instagram_message called: recipient={recipient_id}, token_set={bool(META_ACCESS_TOKEN)}, url={META_API_URL}",
+        flush=True)
     try:
         payload = {
             "recipient": {"id": recipient_id},
-            "message": {"text": message_text}
+            "message": {"text": message_text},
+            "messaging_type": "RESPONSE"
         }
         headers = {
             "Authorization": f"Bearer {META_ACCESS_TOKEN}",
             "Content-Type": "application/json"
         }
         response = requests.post(META_API_URL, json=payload, headers=headers)
+        print(f"Meta API response: {response.status_code} {response.text}", flush=True)
 
         if response.status_code != 200:
             track_meta_error()
@@ -88,9 +92,10 @@ def send_instagram_message(recipient_id: str, message_text: str) -> bool:
         return True
 
     except Exception as e:
-        print(f"Error sending Instagram message: {e}")
+        print(f"Error sending Instagram message: {e}", flush=True)
         track_meta_error()
         return False
+
 
 def process_message(messaging: dict) -> None:
     """
@@ -100,9 +105,13 @@ def process_message(messaging: dict) -> None:
     try:
         sender_id = messaging.get('sender', {}).get('id')
         message_text = messaging.get('message', {}).get('text', '')
+        print(f"sender_id={sender_id}, message_text={message_text}", flush=True)
 
         if not sender_id or not message_text:
+            print(f"Early return: sender_id={sender_id}, message_text={message_text}", flush=True)
             return
+
+        print(f"Processing message from {sender_id}: {message_text}", flush=True)
 
         # Get conversation history from DynamoDB
         history = get_conversation_history(sender_id)
@@ -112,12 +121,14 @@ def process_message(messaging: dict) -> None:
 
         # Get Claude's response via Bedrock
         ai_response = get_response(history, message_text)
+        print(f"AI response: {ai_response}", flush=True)
 
         # Save Claude's response
         save_message(sender_id, 'assistant', ai_response)
 
         # Send response back to Instagram
-        send_instagram_message(sender_id, ai_response)
+        result = send_instagram_message(sender_id, ai_response)
+        print(f"Send result: {result}", flush=True)
 
         # Check if booking link was mentioned
         booking_link_sent = 'booking' in ai_response.lower()
@@ -135,59 +146,9 @@ def process_message(messaging: dict) -> None:
         )
 
     except Exception as e:
-        print(f"Error processing message: {e}")
-
-def manage_followup_schedule(instagram_user_id: str, cancel: bool = False) -> None:
-    import boto3
-    from datetime import datetime, timedelta
-    import pytz
-
-    scheduler = boto3.client('scheduler', region_name='us-east-1')
-    schedule_name = f"follow-up-{instagram_user_id}"
-    lambda_arn = os.environ.get('FOLLOWUP_LAMBDA_ARN')
-    scheduler_role_arn = os.environ.get('SCHEDULER_ROLE_ARN')
-
-    print(f"manage_followup_schedule called: user={instagram_user_id}, cancel={cancel}", flush=True)
-    print(f"lambda_arn={lambda_arn}, scheduler_role_arn={scheduler_role_arn}", flush=True)
-
-    try:
-        scheduler.delete_schedule(Name=schedule_name, GroupName='default')
-        print(f"deleted existing schedule for {instagram_user_id}", flush=True)
-    except scheduler.exceptions.ResourceNotFoundException:
-        pass
-
-    if cancel:
-        print(f"Cancel=True, skipping schedule creation for {instagram_user_id}", flush=True)
-        return
-
-    pst = pytz.timezone('America/Los_Angeles')
-    now = datetime.now(pst)
-    target = now + timedelta(hours=24)
-
-    delivery = target.replace(hour=10, minute=30, second=0, microsecond=0)
-    if delivery < target:
-        delivery += timedelta(days=1)
-
-    schedule_expression = f"at({delivery.strftime('%Y-%m-%dT%H:%M:%S')})"
-    print(f"Creating schedule: {schedule_expression} for {instagram_user_id}", flush=True)
-
-    try:
-
-        scheduler.create_schedule(
-            Name=schedule_name,
-            GroupName='default',
-            ScheduleExpression=schedule_expression,
-            ScheduleExpressionTimezone='America/Los_Angeles',
-            FlexibleTimeWindow={'Mode': 'OFF'},
-            Target={
-                'Arn': lambda_arn,
-                'RoleArn': scheduler_role_arn,
-                'Input': json.dumps({'instagram_user_id': instagram_user_id})
-            }
-        )
-        print(f"Follow_up scheduled for {instagram_user_id} at {delivery}", flush=True)
-    except Exception as e:
-        print(f"Error creating schedule for {instagram_user_id}: {e}", flush=True)
+        import traceback
+        print(f"Error processing message: {e}", flush=True)
+        print(traceback.format_exc(), flush=True)
 
 def run_sqs_consumer() -> None:
     """
@@ -208,14 +169,21 @@ def run_sqs_consumer() -> None:
             messages = response.get('Messages', [])
 
             for msg in messages:
-                body = json.loads(msg['Body'])
+                print(f"SQS message received: {msg['Body'][:200]}", flush=True)
+                raw = msg['Body']
+                if raw.startswith('Action=SendMessage'):
+                    from urllib.parse import parse_qs
+                    parsed = parse_qs(raw)
+                    body = json.loads(parsed['MessageBody'][0])
+                    print(f"Parsed body: {body}", flush=True)
+                else:
+                    body = json.loads(raw)
+                    print(f"Direct body: {body}", flush=True)
 
                 try:
-                    process_message(body)
-                    sender_id = body.get('sender', {}).get('id')
-                    if sender_id:
-                        booking_detected = 'booking' in str(body).lower()
-                        manage_followup_schedule(sender_id, cancel=booking_detected)
+                    for entry in body.get('entry', []):
+                        for messaging in entry.get('messaging', []):
+                            process_message(messaging)
                     sqs.delete_message(
                         QueueUrl=QUEUE_URL,
                         ReceiptHandle=msg['ReceiptHandle']

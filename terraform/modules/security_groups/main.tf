@@ -141,22 +141,3 @@ resource "aws_security_group" "prometheus" {
     Project     = var.project_name
   }
 }
-resource "aws_security_group" "lambda" {
-  name        = "${var.project_name}-${var.environment}-lambda-sg"
-  description = "Security group for follow-up Lambda"
-  vpc_id      = var.vpc_id
-
-  egress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "HTTPS to Anthropic, Meta, Secrets Manager, DynamoDB"
-  }
-
-  tags = {
-    Name        = "${var.project_name}-${var.environment}-lambda-sg"
-    Environment = var.environment
-    Project     = var.project_name
-  }
-}
