@@ -79,8 +79,9 @@ resource "aws_lb_listener_rule" "conversations" {
 }
 
 resource "aws_acm_certificate" "main" {
-  domain_name       = var.domain_name
-  validation_method = "DNS"
+  domain_name               = "silverlinkai.com"
+  subject_alternative_names = ["api.silverlinkai.com"]
+  validation_method         = "DNS"
 
   tags = {
     Name        = "${var.project_name}-${var.environment}-cert"

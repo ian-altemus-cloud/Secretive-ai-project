@@ -126,8 +126,8 @@ resource "aws_ecs_task_definition" "main" {
       },
       {
         name  = "OAUTH_REDIRECT_URI"
-        value = "https://silverlinkai.com/auth/callback"
-      },
+        value = "https://api.silverlinkai.com/auth/callback"
+      }
     ]
 
     secrets = [
