@@ -77,7 +77,7 @@ module "fargate" {
   nlb_target_group_arn     = module.nlb.nlb_target_group_arn
   bedrock_model_arn        = "arn:aws:bedrock:us-east-1:894943009636:inference-profile/us.anthropic.claude-haiku-4-5-20251001-v1:0"
   google_sheets_secret_arn = "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-nail-bar/dev/google-sheets-credentials-IM5gxg"
-
+  jwt_secret_key_arn       = module.secrets.jwt_secret_key_arn
   depends_on = [module.alb]
 }
 
