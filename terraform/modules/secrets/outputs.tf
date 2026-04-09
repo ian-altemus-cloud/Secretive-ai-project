@@ -7,3 +7,7 @@ output "google_sheets_credentials_arn" {
   description = "ARN of the Google Sheets credentials secret"
   value       = aws_secretsmanager_secret.google_sheets_credentials.arn
 }
+
+output "jwt_secret_key_arn" {
+  value = aws_secretsmanager_secret.jwt_secret_key.arn
+}

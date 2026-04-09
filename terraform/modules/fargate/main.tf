@@ -130,6 +130,10 @@ resource "aws_ecs_task_definition" "main" {
       {
         name      = "META_VERIFY_TOKEN"
         valueFrom = "arn:aws:secretsmanager:us-east-1:894943009636:secret:meta-verify-token-SHC3HQ"
+      },
+      {
+        name      = "JWT_SECRET_KEY"
+        valueFrom = var.jwt_secret_key_arn
       }
     ]
 
@@ -210,21 +214,6 @@ resource "aws_iam_role_policy" "ecs_task_policy" {
       },
       {
         Effect = "Allow"
-        Action = [
-          "scheduler:CreateSchedule",
-          "scheduler:DeleteSchedule",
-          "scheduler:GetSchedule",
-          "scheduler:UpdateSchedule"
-        ]
-        Resource = "arn:aws:scheduler:us-east-1:894943009636:schedule/default/follow-up-*"
-      },
-      {
-        Effect   = "Allow"
-        Action   = ["iam:PassRole"]
-        Resource = "arn:aws:iam::894943009636:role/${var.project_name}-${var.environment}-scheduler-role"
-      },
-      {
-        Effect = "Allow"
         Action = ["bedrock:InvokeModel"]
         Resource = [
           "arn:aws:bedrock:*::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0",
@@ -234,7 +223,9 @@ resource "aws_iam_role_policy" "ecs_task_policy" {
       {
         Effect = "Allow"
         Action = ["secretsmanager:GetSecretValue"]
-        Resource = [var.google_sheets_secret_arn,
+        Resource = [
+          var.google_sheets_secret_arn,
+          var.jwt_secret_key_arn,
           "arn:aws:secretsmanager:us-east-1:894943009636:secret:sl_dashboard_api_key-5h8EKS"
         ]
       }
@@ -257,7 +248,8 @@ resource "aws_iam_role_policy" "ecs_execution_secrets_policy" {
           "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-nail-bar/dev/google-sheets-credentials-IM5gxg",
           "arn:aws:secretsmanager:us-east-1:894943009636:secret:META_APP_SECRET-JTVhID",
           "arn:aws:secretsmanager:us-east-1:894943009636:secret:META-ACCESS-TOKEN-Yf2TBG",
-          "arn:aws:secretsmanager:us-east-1:894943009636:secret:meta-verify-token-SHC3HQ"
+          "arn:aws:secretsmanager:us-east-1:894943009636:secret:meta-verify-token-SHC3HQ",
+          var.jwt_secret_key_arn
         ]
       }
     ]

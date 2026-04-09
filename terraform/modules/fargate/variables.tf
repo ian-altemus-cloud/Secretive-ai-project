@@ -78,3 +78,8 @@ variable "nlb_target_group_arn" {
   description = "NLB target group ARN for VPC Link"
   type        = string
 }
+
+variable "jwt_secret_key_arn" {
+  description = "ARN of JWT signing key secret in Secrets Manager"
+  type        = string
+}
