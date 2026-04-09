@@ -17,3 +17,8 @@ variable "public_subnet_ids" {
 variable "alb_sg_id" {
   type = string
 }
+
+variable "domain_name" {
+  description = "Domain name for ACM certificate"
+  type        = string
+}

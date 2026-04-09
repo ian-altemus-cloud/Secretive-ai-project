@@ -115,6 +115,7 @@ module "alb" {
   vpc_id            = module.vpc.vpc_id
   public_subnet_ids = ["subnet-0b6c70f2de03463f6", "subnet-0e82c56aaa6daa7cc"]
   alb_sg_id         = module.security_groups.alb_sg_id
+  domain_name       = "silverlinkai.com"
 }
 
 module "nlb" {
