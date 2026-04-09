@@ -83,3 +83,18 @@ variable "jwt_secret_key_arn" {
   description = "ARN of JWT signing key secret in Secrets Manager"
   type        = string
 }
+
+variable "kms_key_arn" {
+  description = "ARN of KMS key for tenant token encryption"
+  type        = string
+}
+
+variable "tenant_table_arn" {
+  description = "ARN of tenant tokens DynamoDB table"
+  type        = string
+}
+
+variable "tenant_table_name" {
+  description = "Name of tenant tokens DynamoDB table"
+  type        = string
+}

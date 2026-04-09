@@ -112,6 +112,14 @@ resource "aws_ecs_task_definition" "main" {
         name  = "DASHBOARD_API_KEY_ARN"
         value = "arn:aws:secretsmanager:us-east-1:894943009636:secret:sl_dashboard_api_key-5h8EKS"
       },
+      {
+        name  = "KMS_KEY_ARN"
+        value = var.kms_key_arn
+      },
+      {
+        name  = "TENANT_TABLE"
+        value = var.tenant_table_name
+      }
     ]
 
     secrets = [
@@ -221,6 +229,16 @@ resource "aws_iam_role_policy" "ecs_task_policy" {
         ]
       },
       {
+        Effect   = "Allow"
+        Action   = ["kms:Encrypt", "kms:Decrypt", "kms:GenerateDataKey"]
+        Resource = var.kms_key_arn
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:Query"]
+        Resource = var.tenant_table_arn
+      },
+      {
         Effect = "Allow"
         Action = ["secretsmanager:GetSecretValue"]
         Resource = [
@@ -232,6 +250,7 @@ resource "aws_iam_role_policy" "ecs_task_policy" {
     ]
   })
 }
+
 resource "aws_iam_role_policy" "ecs_execution_secrets_policy" {
   name = "${var.project_name}-${var.environment}-ecs-execution-secrets-policy"
   role = aws_iam_role.ecs_execution_role.id

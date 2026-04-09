@@ -78,7 +78,11 @@ module "fargate" {
   bedrock_model_arn        = "arn:aws:bedrock:us-east-1:894943009636:inference-profile/us.anthropic.claude-haiku-4-5-20251001-v1:0"
   google_sheets_secret_arn = "arn:aws:secretsmanager:us-east-1:894943009636:secret:secretive-nail-bar/dev/google-sheets-credentials-IM5gxg"
   jwt_secret_key_arn       = module.secrets.jwt_secret_key_arn
-  depends_on               = [module.alb]
+  kms_key_arn              = module.kms.kms_key_arn
+  tenant_table_arn         = module.dynamodb_tenants.tenant_table_arn
+  tenant_table_name        = module.dynamodb_tenants.tenant_table_name
+
+  depends_on = [module.alb]
 }
 
 module "api_gateway" {
@@ -119,4 +123,16 @@ module "nlb" {
   environment        = var.environment
   vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.private_subnet_ids
+}
+
+module "kms" {
+  source       = "../../modules/kms"
+  project_name = var.project_name
+  environment  = var.environment
+}
+
+module "dynamodb_tenants" {
+  source       = "../../modules/dynamodb_tenants"
+  project_name = var.project_name
+  environment  = var.environment
 }
