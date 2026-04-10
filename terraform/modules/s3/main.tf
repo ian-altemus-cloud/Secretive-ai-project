@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "prompt_store" {
-  bucket = "${var.project_name}-prompt-store"
+  bucket = "${var.project_name}-${var.environment}-prompt-store"
 
   tags = {
     Project     = var.project_name
