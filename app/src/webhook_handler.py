@@ -28,6 +28,26 @@ APP_SECRET = os.environ.get('META_APP_SECRET')
 META_ACCESS_TOKEN = os.environ.get('META_ACCESS_TOKEN')
 DASHBOARD_SECRET_ARN = os.environ.get('DASHBOARD_API_KEY_ARN')
 META_API_URL = "https://graph.instagram.com/v21.0/me/messages"
+dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+kms = boto3.client('kms', region_name='us-east-1')
+TENANT_TABLE = os.environ.get('TENANT_TABLE')
+
+def get_tenant_token(instagram_account_id: str) -> str:
+    import base64
+    table = dynamodb.Table(TENANT_TABLE)
+    item = table.get_item(
+        Key={'instagram_account_id': instagram_account_id}
+    ).get('Item')
+
+    if not item:
+        raise ValueError(f"No tenant record for {instagram_account_id}")
+
+    ciphertext = base64.b64decode(item['encrypted_token'])
+    decrypted = kms.decrypt(
+        CiphertextBlob=ciphertext,
+        KeyId=os.environ.get('KMS_KEY_ARN')
+    )
+    return decrypted['Plaintext'].decode()
 
 def verify_signature(payload, signature):
     """Verify the request came from Meta using HMAC SHA256"""
@@ -71,11 +91,9 @@ def receive_webhook():
             )
     return jsonify({'status': 'ok'}), 200
 
-def send_instagram_message(recipient_id: str, message_text: str) -> bool:
+def send_instagram_message(recipient_id: str, message_text: str, access_token: str) -> bool:
     """Send a message back to Instagram user via Meta Graph API"""
-    print(
-        f"send_instagram_message called: recipient={recipient_id}, token_set={bool(META_ACCESS_TOKEN)}, url={META_API_URL}",
-        flush=True)
+
     try:
         payload = {
             "recipient": {"id": recipient_id},
@@ -83,7 +101,7 @@ def send_instagram_message(recipient_id: str, message_text: str) -> bool:
             "messaging_type": "RESPONSE"
         }
         headers = {
-            "Authorization": f"Bearer {META_ACCESS_TOKEN}",
+            "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json"
         }
         response = requests.post(META_API_URL, json=payload, headers=headers)
@@ -129,8 +147,16 @@ def process_message(messaging: dict) -> None:
         # Save Claude's response
         save_message(sender_id, 'assistant', ai_response)
 
+        # Dynamic token lookup
+        recipient_id = messaging.get('recipient', {}).get('id')
+        try:
+            access_token = get_tenant_token(recipient_id)
+        except ValueError:
+            print(f"No tenant token for {recipient_id}, using static token", flush=True)
+            access_token = META_ACCESS_TOKEN
+
         # Send response back to Instagram
-        result = send_instagram_message(sender_id, ai_response)
+        result = send_instagram_message(sender_id, ai_response, access_token)
         print(f"Send result: {result}", flush=True)
 
         # Check if booking link was mentioned

@@ -5,7 +5,7 @@ import secrets
 import boto3
 import jwt
 import requests
-from flask import Blueprint, redirect, request
+from flask import Blueprint, redirect, request,jsonify
 from urllib.parse import urlencode
 
 auth_bp = Blueprint('auth', __name__)
@@ -13,7 +13,6 @@ auth_bp = Blueprint('auth', __name__)
 # Clients
 kms = boto3.client('kms', region_name='us-east-1')
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-secretsmanager = boto3.client('secretsmanager', region_name='us-east-1')
 
 # Env vars
 META_APP_ID = os.environ.get('META_APP_ID')
@@ -121,13 +120,30 @@ def callback():
     table = dynamodb.Table(TENANT_TABLE)
     table.put_item(Item={
         'instagram_account_id': instagram_account_id,
-        'encrypted_token':      encrypted_b64,
-        'token_expiry':         int(time.time()) + (60 * 86400),
-        'webhook_subscribed':   False,
-        'status':               'active',
-        'onboarded_at':         time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+        'encrypted_token': encrypted_b64,
+        'token_expiry': int(time.time()) + (60 * 86400),
+        'webhook_subscribed': False,
+        'status': 'active',
+        'onboarded_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
     })
 
     print(f"Tenant {instagram_account_id} onboarded successfully", flush=True)
-
     return redirect('https://silverlinkai.com/#connected')
+
+
+@auth_bp.route('/auth/deauthorize', methods=['POST'])
+def deauthorize():
+    data = request.get_json()
+    instagram_account_id = str(data.get('user_id', ''))
+
+    if instagram_account_id:
+        table = dynamodb.Table(TENANT_TABLE)
+        table.update_item(
+            Key={'instagram_account_id': instagram_account_id},
+            UpdateExpression='SET #s = :s',
+            ExpressionAttributeNames={'#s': 'status'},
+            ExpressionAttributeValues={':s': 'revoked'}
+        )
+        print(f"Tenant {instagram_account_id} deauthorized", flush=True)
+
+    return jsonify({'status': 'ok'}), 200
