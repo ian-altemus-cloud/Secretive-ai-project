@@ -6,11 +6,11 @@ terraform {
     }
   }
   backend "s3" {
-    bucket         = "secretive-ai-terraform-state"
-    key            = "secretive-nail-bar/terraform.tfstate"
-    region         = "us-east-1"
-    use_lockfile   = true
-    encrypt        = true
+    bucket       = "secretive-ai-terraform-state"
+    key          = "secretive-nail-bar/terraform.tfstate"
+    region       = "us-east-1"
+    use_lockfile = true
+    encrypt      = true
   }
 }
 
