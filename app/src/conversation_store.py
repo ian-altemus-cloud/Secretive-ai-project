@@ -1,6 +1,7 @@
 import boto3
 import json
 import os
+import time
 
 dynamodb = boto3.resource(
     'dynamodb',
@@ -32,17 +33,22 @@ def get_conversation_history(instagram_user_id: str) -> list:
 def save_message(instagram_user_id: str, role: str, content: str) -> None:
     """
     Save a single message to the conversation history in DynamoDB.
-    Role is either 'user' or 'assistant'.
+    Role is either 'user' or 'assistant'. Delete after 90 days.
     """
     try:
         history = get_conversation_history(instagram_user_id)
         history.append({'role': role, 'content': content})
 
+        ttl_value = int(time.time()) + (90 * 24 * 60 * 60)
+
         table.put_item(
             Item={
                 'instagram_user_id': instagram_user_id,
                 'messages': history,
+                'ttl': ttl_value,
             }
         )
     except Exception as e:
         print(f"Error saving message: {e}")
+
+

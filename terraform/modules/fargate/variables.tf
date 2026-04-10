@@ -98,3 +98,12 @@ variable "tenant_table_name" {
   description = "Name of tenant tokens DynamoDB table"
   type        = string
 }
+variable "prompt_bucket_name" {
+  description = "S3 bucket name for client prompt store"
+  type        = string
+}
+
+variable "prompt_bucket_arn" {
+  description = "S3 bucket ARN for client prompt store IAM policy"
+  type        = string
+}

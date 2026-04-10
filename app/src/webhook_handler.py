@@ -32,22 +32,66 @@ dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 kms = boto3.client('kms', region_name='us-east-1')
 TENANT_TABLE = os.environ.get('TENANT_TABLE')
 
-def get_tenant_token(instagram_account_id: str) -> str:
+PROMPT_BUCKET = os.environ.get('PROMPT_BUCKET')
+GENERIC_FALLBACK = "Hey! For the fastest help reach out to our team directly. We will get back to you shortly"
+
+def get_client_config(instagram_account_id: str) -> dict:
+    """
+    Fetch client access token and system prompt.
+    Primary: DynamoDB
+    Secondary prompt fallback: S3
+    Last resort: generic fallback message
+    No account ID: returns None, caller handles exit
+    """
     import base64
+
+    if not instagram_account_id:
+        return None
+
     table = dynamodb.Table(TENANT_TABLE)
-    item = table.get_item(
-        Key={'instagram_account_id': instagram_account_id}
-    ).get('Item')
+    s3 = boto3.client('s3', region_name='us-east-1')
 
-    if not item:
-        raise ValueError(f"No tenant record for {instagram_account_id}")
+    access_token = None
+    system_prompt = None
 
-    ciphertext = base64.b64decode(item['encrypted_token'])
-    decrypted = kms.decrypt(
-        CiphertextBlob=ciphertext,
-        KeyId=os.environ.get('KMS_KEY_ARN')
-    )
-    return decrypted['Plaintext'].decode()
+    # Primary — DynamoDB
+    try:
+        item = table.get_item(
+            Key={'instagram_account_id': instagram_account_id}
+        ).get('Item')
+
+        if item:
+            ciphertext = base64.b64decode(item['encrypted_token'])
+            decrypted = kms.decrypt(
+                CiphertextBlob=ciphertext,
+                KeyId=os.environ.get('KMS_KEY_ARN')
+            )
+            access_token = decrypted['Plaintext'].decode()
+            system_prompt = item.get('system_prompt')
+            if system_prompt:
+                print(f"Prompt loaded from DynamoDB for {instagram_account_id}", flush=True)
+
+    except Exception as e:
+        print(f"DynamoDB lookup failed for {instagram_account_id}: {e}", flush=True)
+
+    # Secondary — S3
+    if not system_prompt:
+        try:
+            obj = s3.get_object(Bucket=PROMPT_BUCKET, Key=f"prompts/{instagram_account_id}.txt")
+            system_prompt = obj['Body'].read().decode('utf-8')
+            print(f"Prompt loaded from S3 for {instagram_account_id}", flush=True)
+        except Exception as e:
+            print(f"S3 prompt fetch failed for {instagram_account_id}: {e}", flush=True)
+
+    # Last resort
+    if not system_prompt:
+        print(f"CRITICAL: No prompt found for {instagram_account_id}, using generic fallback", flush=True)
+        system_prompt = GENERIC_FALLBACK
+
+    return {
+        'access_token': access_token,
+        'system_prompt': system_prompt
+    }
 
 def verify_signature(payload, signature):
     """Verify the request came from Meta using HMAC SHA256"""
@@ -140,20 +184,23 @@ def process_message(messaging: dict) -> None:
         # Save incoming user message
         save_message(sender_id, 'user', message_text)
 
-        # Get Claude's response via Bedrock
-        ai_response = get_response(history, message_text)
+        # Get client config — token and prompt
+        recipient_id = messaging.get('recipient', {}).get('id')
+        client_config = get_client_config(recipient_id)
+
+        if not client_config:
+            print(f"No recipient ID, skipping message", flush=True)
+            return
+
+        access_token = client_config['access_token'] or META_ACCESS_TOKEN
+        system_prompt = client_config['system_prompt']
+
+        # Get Claude's response
+        ai_response = get_response(history, message_text, system_prompt)
         print(f"AI response: {ai_response}", flush=True)
 
         # Save Claude's response
         save_message(sender_id, 'assistant', ai_response)
-
-        # Dynamic token lookup
-        recipient_id = messaging.get('recipient', {}).get('id')
-        try:
-            access_token = get_tenant_token(recipient_id)
-        except ValueError:
-            print(f"No tenant token for {recipient_id}, using static token", flush=True)
-            access_token = META_ACCESS_TOKEN
 
         # Send response back to Instagram
         result = send_instagram_message(sender_id, ai_response, access_token)
@@ -217,8 +264,17 @@ def run_sqs_consumer() -> None:
                         QueueUrl=QUEUE_URL,
                         ReceiptHandle=msg['ReceiptHandle']
                     )
+                except ValueError as e:
+                    # Configuration error — no client record or no prompt
+                    # Retrying will not fix this, delete and log
+                    print(f"Configuration error, deleting message: {e}", flush=True)
+                    sqs.delete_message(
+                        QueueUrl=QUEUE_URL,
+                        ReceiptHandle=msg['ReceiptHandle']
+                    )
                 except Exception as e:
-                    print(f"Failed to process message, leaving in queue: {e}")
+                    # Transient error — leave in queue for retry
+                    print(f"Failed to process message, leaving in queue: {e}", flush=True)
 
         except Exception as e:
             print(f"SQS consumer error: {e}")

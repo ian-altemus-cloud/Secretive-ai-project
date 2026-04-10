@@ -127,6 +127,10 @@ resource "aws_ecs_task_definition" "main" {
       {
         name  = "OAUTH_REDIRECT_URI"
         value = "https://api.silverlinkai.com/auth/callback"
+      },
+      {
+        name  = "PROMPT_BUCKET"
+        value = var.prompt_bucket_name
       }
     ]
 
@@ -245,6 +249,18 @@ resource "aws_iam_role_policy" "ecs_task_policy" {
         Effect   = "Allow"
         Action   = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:Query"]
         Resource = var.tenant_table_arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          var.prompt_bucket_arn,
+          "${var.prompt_bucket_arn}/*"
+        ]
       },
       {
         Effect = "Allow"

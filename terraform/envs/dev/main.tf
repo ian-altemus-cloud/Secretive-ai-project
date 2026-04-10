@@ -81,6 +81,8 @@ module "fargate" {
   kms_key_arn              = module.kms.kms_key_arn
   tenant_table_arn         = module.dynamodb_tenants.tenant_table_arn
   tenant_table_name        = module.dynamodb_tenants.tenant_table_name
+  prompt_bucket_name       = module.s3.bucket_name
+  prompt_bucket_arn        = module.s3.bucket_arn
 
   depends_on = [module.alb]
 }
@@ -136,4 +138,11 @@ module "dynamodb_tenants" {
   source       = "../../modules/dynamodb_tenants"
   project_name = var.project_name
   environment  = var.environment
+}
+
+module "s3" {
+  source       = "../../modules/s3"
+  project_name = var.project_name
+  environment  = var.environment
+  kms_key_arn  = module.kms.kms_key_arn
 }
