@@ -56,10 +56,47 @@ jobs:
           name: tfplan
           path: terraform/envs/dev/tfplan
 
+  build:
+    name: Build and Push Image
+    runs-on: ubuntu-latest
+    needs: validate
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::894943009636:role/secretive-ai-github-actions-role
+          aws-region: us-east-1
+
+      - name: Login to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: secretive-nail-bar-dev-ecr
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker buildx create --use
+          docker buildx build \
+            --platform linux/amd64 \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+            --push \
+            app/
+
   apply:
     name: Apply Terraform
     runs-on: ubuntu-latest
-    needs: validate
+    needs: build
     environment: production
 
     permissions:
@@ -96,3 +133,28 @@ jobs:
           TF_VAR_aws_region: us-east-1
           TF_VAR_environment: dev
           TF_VAR_project_name: secretive-nail-bar
+
+  deploy:
+    name: Deploy to ECS
+    runs-on: ubuntu-latest
+    needs: apply
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::894943009636:role/secretive-ai-github-actions-role
+          aws-region: us-east-1
+
+      - name: Force ECS deployment
+        run: |
+          aws ecs update-service \
+              --cluster secretive-nail-bar-dev-cluster \
+              --service secretive-nail-bar-dev-service \
+              --force-new-deployment \
+              --region us-east-1
