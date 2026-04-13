@@ -48,7 +48,7 @@ def login():
     }
 
 
-    meta_url = f"https://www.facebook.com/dialog/oauth?{urlencode(params)}"
+    meta_url = f"https://api.instagram.com/oauth/authorize?{urlencode(params)}"
     print(f"OAuth login initiated, redirecting to Meta", flush=True)
     return redirect(meta_url)
 
