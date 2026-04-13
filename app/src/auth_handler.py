@@ -15,7 +15,7 @@ kms = boto3.client('kms', region_name='us-east-1')
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 
 # Env vars
-META_APP_ID = os.environ.get('META_APP_ID')
+META_APP_ID = os.environ.get('INSTAGRAM_APP_ID')
 OAUTH_REDIRECT_URI = os.environ.get('OAUTH_REDIRECT_URI')
 KMS_KEY_ARN = os.environ.get('KMS_KEY_ARN')
 TENANT_TABLE = os.environ.get('TENANT_TABLE')

@@ -125,6 +125,10 @@ resource "aws_ecs_task_definition" "main" {
         value = "925927110056867"
       },
       {
+        name  = "INSTAGRAM_APP_ID"
+        value = "2801837013484260"
+      },
+      {
         name  = "OAUTH_REDIRECT_URI"
         value = "https://api.silverlinkai.com/auth/callback"
       },
