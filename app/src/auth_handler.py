@@ -109,6 +109,18 @@ def callback():
 
     long_token = ll_resp['access_token']
 
+    # Get the correct Instagram account ID for webhook matching
+    account_resp = requests.get(
+        'https://graph.instagram.com/v21.0/me',
+        params={
+            'fields': 'id,username',
+            'access_token': long_token,
+        }
+    ).json()
+
+    instagram_account_id = str(account_resp.get('id', instagram_account_id))
+    print(f"Instagram account ID from API: {instagram_account_id}", flush=True)
+
     # KMS encrypt token
     encrypted = kms.encrypt(
         KeyId=KMS_KEY_ARN,

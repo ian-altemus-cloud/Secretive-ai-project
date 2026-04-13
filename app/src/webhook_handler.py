@@ -176,6 +176,9 @@ def process_message(messaging: dict) -> None:
             print(f"Early return: sender_id={sender_id}, message_text={message_text}", flush=True)
             return
 
+        if messaging.get('message', {}).get('is_echo'):
+            return
+
         print(f"Processing message from {sender_id}: {message_text}", flush=True)
 
         # Get conversation history from DynamoDB
