@@ -42,7 +42,7 @@ def login():
     params = {
         'client_id':     META_APP_ID,
         'redirect_uri':  OAUTH_REDIRECT_URI,
-        'scope':         'instagram_business_basic,instagram_business_manage_messages,pages_show_list',
+        'scope':         'instagram_business_basic,instagram_business_manage_messages',
         'response_type': 'code',
         'state':         state,
     }
@@ -109,24 +109,18 @@ def callback():
 
     long_token = ll_resp['access_token']
 
-    # Get Instagram Business Account ID via connected Facebook Pages
-    pages_resp = requests.get(
-        'https://graph.facebook.com/v21.0/me/accounts',
+    # Get the correct Instagram account ID that matches webhook events
+    me_resp = requests.get(
+        'https://graph.instagram.com/v21.0/me',
         params={
-            'fields': 'instagram_business_account',
+            'fields': 'user_id,username',
             'access_token': long_token,
         }
     ).json()
 
-    business_account_id = None
-    for page in pages_resp.get('data', []):
-        ig_account = page.get('instagram_business_account', {})
-        if ig_account.get('id'):
-            business_account_id = ig_account['id']
-            break
+    instagram_account_id = str(me_resp.get('user_id') or instagram_account_id)
+    print(f"Instagram account ID for webhooks: {instagram_account_id}", flush=True)
 
-    instagram_account_id = str(business_account_id or instagram_account_id)
-    print(f"Instagram Business Account ID: {instagram_account_id}", flush=True)
 
     # KMS encrypt token
     encrypted = kms.encrypt(
