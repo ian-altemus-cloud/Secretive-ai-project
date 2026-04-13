@@ -68,18 +68,17 @@ def onboard_client(
 
     # Write to DynamoDB
     print(f"Writing client record to DynamoDB...")
-    table.put_item(
-        Item={
-            'instagram_account_id': instagram_account_id,
-            'business_name': business_name,
-            'encrypted_token': encrypted_token,
-            'system_prompt': system_prompt,
-            'prompt_version': prompt_version,
-            'updated_at': datetime.now(timezone.utc).isoformat(),
-            'status': 'active',
-            'webhook_subscribed': True
+    table.update_item(
+        Key={'instagram_account_id': instagram_account_id},
+        UpdateExpression='SET business_name = :b, system_prompt = :p, prompt_version = :v, updated_at = :u',
+        ExpressionAttributeValues={
+            ':b': business_name,
+            ':p': system_prompt,
+            ':v': prompt_version,
+            ':u': datetime.now(timezone.utc).isoformat(),
         }
     )
+
     print(f"✓ Client record written")
 
     # Verify

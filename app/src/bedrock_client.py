@@ -24,9 +24,6 @@ def _call_anthropic(conversation_history: list, new_message: str, system_prompt:
         {"role": "user", "content": new_message}
     ]
 
-    print(f"System prompt length: {len(system_prompt)}", flush=True)
-    print(f"System prompt preview: {system_prompt[:100]}", flush=True)
-
     response = client.messages.create(
         model=ANTHROPIC_MODEL_ID,
         max_tokens=1024,
