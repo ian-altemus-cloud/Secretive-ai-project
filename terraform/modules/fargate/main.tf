@@ -121,7 +121,7 @@ resource "aws_ecs_task_definition" "main" {
         value = var.tenant_table_name
       },
       {
-        name  = "META_APP_ID"
+        name  = "META_WEBHOOK_APP_ID"
         value = "925927110056867"
       },
       {
