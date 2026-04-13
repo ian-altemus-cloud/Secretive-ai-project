@@ -42,13 +42,13 @@ def login():
     params = {
         'client_id':     META_APP_ID,
         'redirect_uri':  OAUTH_REDIRECT_URI,
-        'scope':         'instagram_business_manage_messages',
+        'scope':         'instagram_business_basic,instagram_business_manage_messages',
         'response_type': 'code',
         'state':         state,
     }
 
 
-    meta_url = f"https://www.instagram.com/oauth/authorize?{urlencode(params)}"
+    meta_url = f"https://www.facebook.com/dialog/oauth?{urlencode(params)}"
     print(f"OAuth login initiated, redirecting to Meta", flush=True)
     return redirect(meta_url)
 
@@ -127,8 +127,29 @@ def callback():
         'onboarded_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
     })
 
-    print(f"Tenant {instagram_account_id} onboarded successfully", flush=True)
+    # Subscribe to webhook
+    subscribe_resp = requests.post(
+        f"https://graph.instagram.com/v21.0/{instagram_account_id}/subscribed_apps",
+        params={
+            'subscribed_fields': 'messages',
+            'access_token': long_token,
+        }
+    ).json()
+
+    if subscribe_resp.get('success'):
+        table.update_item(
+            Key={'instagram_account_id': instagram_account_id},
+            UpdateExpression='SET webhook_subscribed = :t',
+            ExpressionAttributeValues={':t': True}
+        )
+        print(f"Webhook subscribed for {instagram_account_id}", flush=True)
+    else:
+        print(f"Webhook subscription failed for {instagram_account_id}: {subscribe_resp}", flush=True)
+
+    print(f"Client {instagram_account_id} onboarded successfully", flush=True)
     return redirect('https://silverlinkai.com/#connected')
+
+
 
 
 @auth_bp.route('/auth/deauthorize', methods=['POST'])
