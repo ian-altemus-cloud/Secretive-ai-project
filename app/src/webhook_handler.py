@@ -87,10 +87,14 @@ def get_client_config(instagram_account_id: str) -> dict:
     if not system_prompt:
         print(f"CRITICAL: No prompt found for {instagram_account_id}, using generic fallback", flush=True)
         system_prompt = GENERIC_FALLBACK
+        has_prompt = False
+    else:
+        has_prompt = True
 
     return {
         'access_token': access_token,
-        'system_prompt': system_prompt
+        'system_prompt': system_prompt,
+        'has_prompt': has_prompt,
     }
 
 def verify_signature(payload, signature):
@@ -197,6 +201,20 @@ def process_message(messaging: dict) -> None:
 
         access_token = client_config['access_token'] or META_ACCESS_TOKEN
         system_prompt = client_config['system_prompt']
+        has_prompt = client_config['has_prompt']
+
+        # If no real prompt exists, send fallback directly — skip Claude
+        if not has_prompt:
+            send_instagram_message(sender_id, GENERIC_FALLBACK, access_token)
+            log_conversation(
+                instagram_user_id=sender_id,
+                source='instagram',
+                intent='dm',
+                user_message=message_text,
+                assistant_response=GENERIC_FALLBACK,
+                booking_link_sent=False
+            )
+            return
 
         # Get Claude's response
         ai_response = get_response(history, message_text, system_prompt)
