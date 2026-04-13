@@ -133,6 +133,7 @@ def callback():
     table = dynamodb.Table(TENANT_TABLE)
     table.put_item(Item={
         'instagram_account_id': instagram_account_id,
+        'username': me_resp.get('username', ''),
         'encrypted_token': encrypted_b64,
         'token_expiry': int(time.time()) + (60 * 86400),
         'webhook_subscribed': False,
