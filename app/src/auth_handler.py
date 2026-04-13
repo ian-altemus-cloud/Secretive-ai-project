@@ -113,12 +113,15 @@ def callback():
     account_resp = requests.get(
         'https://graph.instagram.com/v21.0/me',
         params={
-            'fields': 'id,username',
+            'fields': 'id,username,instagram_business_account',
             'access_token': long_token,
         }
     ).json()
 
-    instagram_account_id = str(account_resp.get('id', instagram_account_id))
+    instagram_account_id = str(
+        account_resp.get('instagram_business_account', {}).get('id')
+        or account_resp.get('id', instagram_account_id)
+    )
     print(f"Instagram account ID from API: {instagram_account_id}", flush=True)
 
     # KMS encrypt token
