@@ -131,15 +131,26 @@ def callback():
 
     # Store in DynamoDB
     table = dynamodb.Table(TENANT_TABLE)
-    table.put_item(Item={
-        'instagram_account_id': instagram_account_id,
-        'username': me_resp.get('username', ''),
-        'encrypted_token': encrypted_b64,
-        'token_expiry': int(time.time()) + (60 * 86400),
-        'webhook_subscribed': False,
-        'status': 'active',
-        'onboarded_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
-    })
+    table.update_item(
+        Key={'instagram_account_id': instagram_account_id},
+        UpdateExpression='''SET
+        encrypted_token = :t,
+        token_expiry = :e,
+        webhook_subscribed = :w,
+        #s = :s,
+        onboarded_at = :o,
+        username = :u
+        ''',
+        ExpressionAttributeNames={'#s': 'status'},
+        ExpressionAttributeValues={
+            ':t': encrypted_b64,
+            ':e': int(time.time()) + (60 * 86400),
+            ':w': False,
+            ':s': 'active',
+            ':o': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+            ':u': me_resp.get('username', '')
+        }
+    )
 
     # Subscribe to webhook
     subscribe_resp = requests.post(
