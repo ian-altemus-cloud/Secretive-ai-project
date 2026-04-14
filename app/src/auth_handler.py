@@ -190,6 +190,6 @@ def deauthorize():
             ExpressionAttributeNames={'#s': 'status'},
             ExpressionAttributeValues={':s': 'revoked'}
         )
-        print(f"Tenant {instagram_account_id} deauthorized", flush=True)
+        print(f"Client {instagram_account_id} deauthorized", flush=True)
 
     return jsonify({'status': 'ok'}), 200
