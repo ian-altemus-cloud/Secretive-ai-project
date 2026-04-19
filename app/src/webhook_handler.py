@@ -53,6 +53,7 @@ def get_client_config(instagram_account_id: str) -> dict:
 
     access_token = None
     system_prompt = None
+    agent_enabled = False
 
     selectors = {
         'service': "a:has-text('{service}')",
@@ -76,6 +77,7 @@ def get_client_config(instagram_account_id: str) -> dict:
             access_token = decrypted['Plaintext'].decode()
             system_prompt = item.get('system_prompt')
             selectors = item.get('selectors', selectors)
+            agent_enabled = item.get('agent_enabled', False)
 
             if system_prompt:
                 print(f"Prompt loaded from DynamoDB for {instagram_account_id}", flush=True)
@@ -105,6 +107,7 @@ def get_client_config(instagram_account_id: str) -> dict:
         'system_prompt': system_prompt,
         'has_prompt': has_prompt,
         'selectors': selectors,
+        'agent_enabled': agent_enabled,
     }
 
 def verify_signature(payload, signature):
