@@ -54,6 +54,13 @@ def get_client_config(instagram_account_id: str) -> dict:
     access_token = None
     system_prompt = None
 
+    selectors = {
+        'service': "a:has-text('{service}')",
+        'date': "[aria-label='Select day{day}']",
+        'timeslot': 'div[for="timeslot"]',
+        'calendar': '.datevalue.currmonth'
+    }
+
     # Primary — DynamoDB
     try:
         item = table.get_item(
@@ -68,6 +75,8 @@ def get_client_config(instagram_account_id: str) -> dict:
             )
             access_token = decrypted['Plaintext'].decode()
             system_prompt = item.get('system_prompt')
+            selectors = item.get('selectors', selectors)
+
             if system_prompt:
                 print(f"Prompt loaded from DynamoDB for {instagram_account_id}", flush=True)
 
@@ -95,6 +104,7 @@ def get_client_config(instagram_account_id: str) -> dict:
         'access_token': access_token,
         'system_prompt': system_prompt,
         'has_prompt': has_prompt,
+        'selectors': selectors,
     }
 
 def verify_signature(payload, signature):
