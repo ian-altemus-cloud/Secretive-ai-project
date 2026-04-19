@@ -20,7 +20,7 @@ def time_to_minutes(time_str: str) -> int:
     t = datetime.strptime(time_str.strip(), "%I:%M %p")
     return t.hour * 60 + t.minute
 
-async def check_availability(location: str, service: str, target_date: str, target_time: str, attempt: int = 1) -> dict:
+async def check_availability(location: str, service: str, target_date: str, target_time: str, attempt: int = 1, selectors: dict = None) -> dict:
     """
     Navigate to the booking site and check availability.
     Returns requested slot status plus two alts.
@@ -32,8 +32,17 @@ async def check_availability(location: str, service: str, target_date: str, targ
     if not url:
         return {"error": f"Unknown location: {location}"}
 
+    # Use passed selectors or fall back to defaults
+    default_selectors = {
+        'service': "a:has-text('{service}')",
+        'date': "[aria-label='Select day{day}']",
+        'timeslot': 'div[for="timeslot"]',
+        'calendar': '.datevalue.currmonth'
+    }
+    active_selectors = selectors if selectors else default_selectors
+
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=False)
+        browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
 
         try:
@@ -45,21 +54,21 @@ async def check_availability(location: str, service: str, target_date: str, targ
             print(f"Selecting service: {service}", flush=True)
             service_locator = page.locator(f"text={service}").first
             await service_locator.wait_for(state="visible", timeout=10000)
-            await page.locator(f"a:has-text('{service}')").first.click()
+            await page.locator(active_selectors['service'].replace('{service}', service)).first.click()
             print(f"Service selected: {service}", flush=True)
-            await page.wait_for_selector('.datevalue.currmonth', timeout=10000)
+            await page.wait_for_selector(active_selectors['calendar'], timeout=10000)
 
             # Select the target date
             print(f"Selecting date: {target_date}", flush=True)
             day_number = target_date.split(" ")[1]
-            await page.locator(f'[aria-label="Select day{day_number}"]').click()
+            await page.locator(active_selectors['date'].replace('{day}', day_number)).click()
             print(f"Date selected: {target_date}", flush=True)
             await page.wait_for_timeout(3000)
 
             # Read available time slots
             print("Reading available time slots", flush=True)
-            await page.wait_for_selector('div[for="timeslot"]', timeout=10000)
-            slot_elements = await page.locator('div[for="timeslot"]').all()
+            await page.wait_for_selector(active_selectors['timeslot'], timeout=10000)
+            slot_elements = await page.locator(active_selectors['timeslot']).all()
 
             available_slots = []
             for slot in slot_elements:
@@ -130,7 +139,7 @@ async def main():
     )
     print(f"Result: {result}", flush=True)
 
-def run_agent(user_message: str) -> str:
+def run_agent(user_message: str, client_config: dict = None) -> str:
     """
     Run the availability agent loop.
     Takes a customer message, uses Claude tool use to determine
@@ -138,6 +147,10 @@ def run_agent(user_message: str) -> str:
     and returns a natural language response.
     """
     import anthropic
+
+    # Use selectors from client config if availabile, otherwise use defaults
+    selectors = client_config.get('selectors') if client_config else None
+    system_prompt_override = client_config.get('system_prompt') if client_config else None
 
     client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
@@ -199,7 +212,8 @@ def run_agent(user_message: str) -> str:
             location=tool_input["location"],
             service=tool_input["service"],
             target_date=tool_input["target_date"],
-            target_time=tool_input["target_time"]
+            target_time=tool_input["target_time"],
+            selectors=selectors
         ))
 
         print(f"Tool result: {tool_result}", flush=True)

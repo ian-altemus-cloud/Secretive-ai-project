@@ -215,6 +215,7 @@ def process_message(messaging: dict) -> None:
         access_token = client_config['access_token'] or META_ACCESS_TOKEN
         system_prompt = client_config['system_prompt']
         has_prompt = client_config['has_prompt']
+        agent_enabled = client_config.get('agent_enabled', False)
 
         # If no real prompt exists, send fallback directly — skip Claude
         if not has_prompt:
@@ -230,7 +231,11 @@ def process_message(messaging: dict) -> None:
             return
 
         # Get Claude's response
-        ai_response = get_response(history, message_text, system_prompt)
+        if agent_enabled:
+            from agents.availability_check import run_agent
+            ai_response = run_agent(message_text, client_config)
+        else:
+            ai_response = get_response(history, message_text, system_prompt)
         print(f"AI response: {ai_response}", flush=True)
 
         # Save Claude's response
